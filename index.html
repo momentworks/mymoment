@@ -16,7 +16,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>모먼트웍스 · 고객 전용 페이지</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Noto+Serif+KR:wght@500;600;700&family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Noto+Serif+KR:wght@500;600;700&family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 html,body{margin:0;padding:0;background:#F7F5F0;}
 /* ===== 고객 전용 페이지 ===== */
@@ -39,7 +39,11 @@ html,body{margin:0;padding:0;background:#F7F5F0;}
 .cp-main{padding:14px 14px 10px;display:flex;flex-direction:column;gap:12px;}
 .cp-hero{background:linear-gradient(160deg,var(--cp-wine) 0%,#3B1219 100%);color:#F7F0E6;border-radius:18px;padding:26px 20px 20px;text-align:center;box-shadow:0 10px 26px rgba(92,31,41,.25);}
 .cp-hello{font-size:13px;letter-spacing:.08em;color:var(--cp-gold-s);font-weight:700;}
-.cp-dday{font-family:'Cormorant Garamond','Noto Serif KR',serif;font-size:56px;font-weight:600;line-height:1.1;margin:6px 0 2px;}
+.cp-dday{font-family:'Cormorant Garamond','Noto Serif KR',serif;font-size:64px;font-weight:700;line-height:1.05;letter-spacing:.04em;margin:10px 0 4px;
+  background:linear-gradient(180deg,#FFF6E3 0%,#F2DDB0 38%,#D4AF6A 62%,#F5E3BC 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 2px 6px rgba(0,0,0,.28));font-variant-numeric:lining-nums;}
+.cp-dday.done{font-family:'Noto Serif KR',serif;font-size:40px;letter-spacing:.02em;}
+.cp-dday::after{content:'';display:block;width:42px;height:1px;margin:10px auto 0;background:linear-gradient(90deg,transparent,#D4AF6A,transparent);}
 .cp-dsub{font-size:12.5px;color:#E7D9C2;}
 .cp-when{margin:14px auto 16px;font-size:14px;line-height:1.7;border-top:1px solid rgba(255,255,255,.18);border-bottom:1px solid rgba(255,255,255,.18);padding:10px 0;}
 .cp-hero-acts{display:flex;gap:8px;}
@@ -226,7 +230,7 @@ const CustomerPortal = (function(){
     const sub = n===null ? '예식 일정이 정해지면 여기에 표시돼요' : n>0 ? '예식까지 남은 날' : n===0 ? '오늘 예식을 진심으로 축하드려요 💐' : '소중한 날을 함께해 주셔서 감사합니다';
     return `<section class="cp-hero">
       <div class="cp-hello">${view.client.sideLabel? `<span class="cp-side">${e(view.client.sideLabel)}</span>`:''}${e(view.client.name)}님의 예식</div>
-      <div class="cp-dday">${big}</div>
+      <div class="cp-dday${n!==null && n<0 ? ' done' : ''}">${big}</div>
       <div class="cp-dsub">${sub}</div>
       <div class="cp-when"><b>${fdate(w.date, true)}</b>${w.time? ` · ${e(w.time)}` : ''}<br>${e(w.venue)} ${e(w.hall)}</div>
       <div class="cp-hero-acts">
@@ -275,8 +279,27 @@ const CustomerPortal = (function(){
         ${a.reviewDay? `<div class="minus"><span>본식후기 할인 (예식 후 페이백)</span><b>− ${won(a.reviewDay)}</b></div>`:''}
       </div>
       <p class="cp-note">${c.settled? '✓ 정산이 완료됐어요' : '금액은 예식 전 확정 내용에 따라 달라질 수 있어요. 궁금한 점은 언제든 문의해주세요.'}</p>
-      ${c.url? `<a class="cp-btn primary wide" href="${e(c.url)}" target="_blank" rel="noopener">📄 계약서 보기 (PDF)</a>` : '<div class="cp-empty">계약서 파일이 준비되면 여기서 바로 볼 수 있어요</div>'}
+      ${c.hasFile? `<button type="button" class="cp-btn primary wide" data-cp="contractDownload">⬇ 계약서 다운로드 (PDF)</button><p class="cp-note">🔒 계약서는 본인 접속코드로만 받을 수 있어요.</p>` : '<div class="cp-empty">계약서 파일이 준비되면 여기서 바로 받을 수 있어요</div>'}
     </section>`;
+  }
+  // 계약서: 보기 없이 다운로드만 (서버가 접속코드 확인 후 비공개 드라이브 파일을 전달)
+  let dlBusy = false;
+  async function downloadDoc(btn){
+    if(dlBusy) return;
+    if(!H.onDownload){ toast('미리보기에서는 다운로드할 수 없어요'); return; }
+    dlBusy = true; const old = btn ? btn.textContent : ''; if(btn){ btn.textContent = '받는 중…'; btn.disabled = true; }
+    try{
+      const f = await H.onDownload();
+      const bin = atob(f.data), arr = new Uint8Array(bin.length);
+      for(let i=0;i<bin.length;i++) arr[i] = bin.charCodeAt(i);
+      const blob = new Blob([arr], {type: f.mime || 'application/pdf'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = f.name || '모먼트웍스_계약서.pdf'; a.rel='noopener';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=> URL.revokeObjectURL(url), 60000);
+      toast(/KAKAOTALK/i.test(navigator.userAgent) ? '저장이 안 되면 ⋮ 메뉴 → 다른 브라우저로 열기 후 다시 눌러주세요' : '계약서를 저장했어요');
+    }catch(err){ toast(err.message || '계약서를 받지 못했어요'); }
+    finally{ dlBusy = false; if(btn){ btn.textContent = old; btn.disabled = false; } }
   }
   function liveHTML(){
     const l = view.live, emb = ytEmbed(l.youtube), n = dday(view.wedding.date);
@@ -364,6 +387,7 @@ const CustomerPortal = (function(){
       if(navigator.share){ try{ await navigator.share({text}); }catch(_){} } else if(await copyText(text)) toast('공유 문구를 복사했어요');
       return;
     }
+    if(a==='contractDownload'){ downloadDoc(el); return; }
     if(a==='copyGift'){ if(await copyText(view.live.giftCode)) toast('현황판 코드를 복사했어요'); return; }
     if(a==='shareGift'){
       const text = `💌 ${view.client.name}님 ${view.client.sideLabel? view.client.sideLabel+' ' : ''}실시간 축의 현황\n아래 링크를 누르면 바로 열려요 (현황판 코드: ${view.live.giftCode})\n${view.live.giftUrl}`;
@@ -433,6 +457,14 @@ async function fetchViewOnce(code){
   if(Array.isArray(j)) throw new Error('서버 점검 중이에요. 잠시 후 다시 시도해주세요');
   if(!j || !j.ok) throw new Error((j && j.error) || '정보를 불러오지 못했어요');
   lastLoad = Date.now();
+  return j;
+}
+async function fetchContractFile(code){
+  let res, j;
+  try{ res = await fetch(apiUrl({action:'customerFile', code}), {method:'GET'}); }
+  catch(e){ throw new Error('서버에 연결하지 못했어요. 인터넷 연결을 확인해주세요'); }
+  try{ j = await res.json(); }catch(e){ throw new Error('서버 응답을 읽지 못했어요. 잠시 후 다시 시도해주세요'); }
+  if(!j || !j.ok || !j.data) throw new Error((j && j.error) || '계약서를 받지 못했어요. 서버 스크립트가 최신인지 확인해주세요');
   return j;
 }
 async function postOp(op, ops){
@@ -568,6 +600,7 @@ function openPortal(view){
   app.innerHTML = '<div id="portalRoot"></div>';
   CustomerPortal.mount(document.getElementById('portalRoot'), view, {
     onRefresh: ()=> fetchView(CODE),
+    onDownload: ()=> fetchContractFile(CODE),
     onCache: (v)=> cacheViewSoon(v),
     onInstall: ()=> installApp(),
     isInstalled: ()=> isInstalled(),
