@@ -92,6 +92,7 @@ html,body{margin:0;padding:0;background:#F7F5F0;}
 .cp-foot b{display:block;letter-spacing:.32em;font-size:10.5px;color:var(--cp-ink);}
 .cp-toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:#1F1A1C;color:#fff;padding:11px 18px;border-radius:999px;font-size:13px;opacity:0;transition:all .25s;z-index:200;pointer-events:none;max-width:90vw;text-align:center;}
 .cp-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.cp-side{display:inline-block;background:var(--cp-gold);color:#fff;font-size:11px;font-weight:800;letter-spacing:.04em;border-radius:999px;padding:2px 9px;margin-right:6px;vertical-align:middle;}
 
 /* ================= 접속 메인화면 (모먼트웍스 로고) ================= */
 .mw-entry{position:fixed;inset:0;z-index:500;overflow-y:auto;background:#F7F5F0;background-image:radial-gradient(ellipse at 50% 38%, #FFFFFF 0%, #F7F5F0 55%, #EFEBE3 100%);color:#1A1618;
@@ -224,7 +225,7 @@ const CustomerPortal = (function(){
     const big = n===null ? '' : n>0 ? 'D-'+n : n===0 ? 'D-DAY' : '예식 완료';
     const sub = n===null ? '예식 일정이 정해지면 여기에 표시돼요' : n>0 ? '예식까지 남은 날' : n===0 ? '오늘 예식을 진심으로 축하드려요 💐' : '소중한 날을 함께해 주셔서 감사합니다';
     return `<section class="cp-hero">
-      <div class="cp-hello">${e(view.client.name)}님의 예식</div>
+      <div class="cp-hello">${view.client.sideLabel? `<span class="cp-side">${e(view.client.sideLabel)}</span>`:''}${e(view.client.name)}님의 예식</div>
       <div class="cp-dday">${big}</div>
       <div class="cp-dsub">${sub}</div>
       <div class="cp-when"><b>${fdate(w.date, true)}</b>${w.time? ` · ${e(w.time)}` : ''}<br>${e(w.venue)} ${e(w.hall)}</div>
@@ -249,7 +250,7 @@ const CustomerPortal = (function(){
         <div><dt>예식장</dt><dd>${e(w.venue)||'-'} ${e(w.hall)}</dd></div>
         ${w.region? `<div><dt>지역</dt><dd>${e(w.region)}</dd></div>`:''}
         <div><dt>이용 상품</dt><dd>축의대 ${e(w.product)||'-'}</dd></div>
-        <div><dt>예상 하객</dt><dd>신랑측 ${w.groomGuests}명 · 신부측 ${w.brideGuests}명</dd></div>
+        <div><dt>예상 하객</dt><dd>${view.client.side==='groom' ? `<b>신랑측 ${w.groomGuests}명</b> · 신부측 ${w.brideGuests}명` : view.client.side==='bride' ? `신랑측 ${w.groomGuests}명 · <b>신부측 ${w.brideGuests}명</b>` : `신랑측 ${w.groomGuests}명 · 신부측 ${w.brideGuests}명`}</dd></div>
         <div><dt>운영 설정서</dt><dd>${w.settingsSubmitted? '<b class="ok">제출 완료 ✓</b>' : '<b class="wait">제출 전</b>'}</dd></div>
       </dl>
       ${!w.settingsSubmitted && i.settingsFormUrl ? `<a class="cp-btn primary wide" href="${e(i.settingsFormUrl)}" target="_blank" rel="noopener">📝 축의대 운영 설정서 작성하기</a>`:''}
@@ -287,12 +288,15 @@ const CustomerPortal = (function(){
     </section>`;
   }
   function giftHTML(){
-    const u = view.live.giftUrl;
+    const l = view.live || {};
+    const u = l.giftUrl || 'https://momentworks.github.io/arrange/', code = l.giftCode || '';
     return `<section class="cp-card" id="cp-gift"><h2>💌 실시간 축의 현황</h2>
-      ${u ? `<p class="cp-desc">예식 당일 축의대에서 접수되는 축의 내역을 실시간으로 확인하실 수 있어요.</p>
-        <div class="cp-row2"><a class="cp-btn primary" href="${e(u)}" target="_blank" rel="noopener">실시간 축의 현황 열기</a><button class="cp-btn ghost" data-cp="giftToggle">${giftOpen? '접기' : '여기서 보기'}</button></div>
-        ${giftOpen? `<div class="cp-frame"><iframe src="${e(u)}" title="실시간 축의 현황" loading="lazy"></iframe></div>`:''}`
-        : '<div class="cp-empty">예식 당일 축의 현황 링크가 여기에 열려요</div>'}
+      <p class="cp-desc">예식 당일 ${view.client.sideLabel? `<b>${e(view.client.sideLabel)}</b> ` : ''}축의대에서 접수되는 축의 내역을 실시간으로 확인하실 수 있어요.</p>
+      ${code ? `<div class="cp-code"><span>현황판 코드</span><b>${e(code)}</b><div class="cp-row2"><button class="cp-btn gold" data-cp="shareGift">현황판 공유하기</button><button class="cp-btn ghost" data-cp="copyGift">코드 복사</button></div></div>
+        <p class="cp-note">버튼을 누르면 코드가 자동 입력되어 바로 접속돼요.</p>`
+        : `<p class="cp-note">현황판 코드는 예식 전에 모먼트웍스에서 등록해드려요. 코드를 받으셨다면 열린 화면의 <b>실시간 축의 현황</b> 탭에 입력해주세요.</p>`}
+      <div class="cp-row2"><a class="cp-btn primary" href="${e(u)}" target="_blank" rel="noopener">실시간 축의 현황 열기</a><button class="cp-btn ghost" data-cp="giftToggle">${giftOpen? '접기' : '여기서 보기'}</button></div>
+      ${giftOpen? `<div class="cp-frame"><iframe src="${e(u)}" title="실시간 축의 현황" loading="lazy"></iframe></div>`:''}
     </section>`;
   }
   function referralHTML(){
@@ -300,7 +304,8 @@ const CustomerPortal = (function(){
     const lab = {pending:'예식 전', discount:'잔금 할인 확정', payback:'페이백 확정'};
     return `<section class="cp-card" id="cp-ref"><h2>💝 짝꿍코드 추천 현황</h2>
       <div class="cp-code"><span>나의 짝꿍코드</span><b>${e(r.code)||'-'}</b><div class="cp-row2"><button class="cp-btn gold" data-cp="shareCode">짝꿍코드 공유하기</button><button class="cp-btn ghost" data-cp="copyCode">복사</button></div></div>
-      <p class="cp-desc">지인분이 모먼트웍스 계약 시 짝꿍코드를 입력하면 지인분은 할인을 받고, 소개해주신 분께는 <b>건당 ${won(r.unit)}</b>이 적립돼요. 추천받은 분의 본식이 끝나면 확정되며, ${e(view.client.name)}님 예식 <b>전</b>에 확정된 금액은 잔금에서 할인, <b>이후</b> 확정분은 페이백으로 드려요.</p>
+      <p class="cp-desc">소개받은 분이 <b>${e(view.client.name)}</b>님의 짝꿍코드로 모먼트웍스와 계약 시 소개받은 분은 <b>2만원 할인</b>받고, <b>${e(view.client.name)}</b>님께는 소개받은 분의 예식 종료 후 <b>건당 ${won(r.unit)}</b> 혜택이 확정됩니다.</p>
+      <p class="cp-desc">${e(view.client.name)}님 예식 <b>전</b>에 확정된 금액은 잔금에서 할인되고,<br>예식 <b>이후</b> 확정된 금액은 계좌로 페이백해드립니다.</p>
       <div class="cp-stats">
         <div><span>추천 계약</span><b>${r.total}건</b></div>
         <div><span>잔금 할인</span><b>${won(r.discountAmount)}</b></div>
@@ -309,10 +314,13 @@ const CustomerPortal = (function(){
       ${r.rows.length? `<div class="cp-list">${r.rows.map(x=>`<div><span><b>${e(x.name)}</b>님<small>예식 ${x.weddingDate? fdate(x.weddingDate) : '미정'}</small></span><em class="${x.status}">${lab[x.status]}</em></div>`).join('')}</div>` : '<div class="cp-empty">아직 짝꿍코드로 계약한 분이 없어요. 코드를 공유해보세요!</div>'}
     </section>`;
   }
-  function infoHTML(){
+  function noticeHTML(){ // 📌 안내 (예식 일정 알림 위)
     const i = view.info;
-    return `${i.notice || i.memo ? `<section class="cp-card cp-notice"><h2>📌 안내</h2>${i.notice? `<p>${e(i.notice).replace(/\n/g,'<br>')}</p>`:''}${i.memo? `<p class="cp-memo">${e(i.memo).replace(/\n/g,'<br>')}</p>`:''}</section>`:''}
-      <section class="cp-card cp-contact"><h2>💬 문의하기</h2>
+    return `${i.notice || i.memo ? `<section class="cp-card cp-notice"><h2>📌 안내</h2>${i.notice? `<p>${e(i.notice).replace(/\n/g,'<br>')}</p>`:''}${i.memo? `<p class="cp-memo">${e(i.memo).replace(/\n/g,'<br>')}</p>`:''}</section>`:''}`;
+  }
+  function infoHTML(){ // 💬 문의하기
+    const i = view.info;
+    return `      <section class="cp-card cp-contact"><h2>💬 문의하기</h2>
         <div class="cp-row2"><a class="cp-btn kakao" href="${e(i.kakao)}" target="_blank" rel="noopener">카카오톡 상담</a><a class="cp-btn ghost" href="tel:${e(i.phone)}">📞 전화 문의</a></div>
       </section>`;
   }
@@ -331,6 +339,7 @@ const CustomerPortal = (function(){
       <nav class="cp-nav">${nav.map(([id,l])=>`<button data-cp="go" data-v="${id}">${l}</button>`).join('')}</nav>
       <main class="cp-main">
         ${heroHTML()}
+        ${noticeHTML()}
         ${alarmHTML()}
         ${weddingHTML()}
         ${contractHTML()}
@@ -353,6 +362,12 @@ const CustomerPortal = (function(){
     if(a==='shareCode'){
       const text = `💍 모먼트웍스 축의대 대행 서비스\n계약할 때 짝꿍코드 [${view.referral.code}] 를 입력하면 할인을 받을 수 있어요!\n상담: ${view.info.kakao}`;
       if(navigator.share){ try{ await navigator.share({text}); }catch(_){} } else if(await copyText(text)) toast('공유 문구를 복사했어요');
+      return;
+    }
+    if(a==='copyGift'){ if(await copyText(view.live.giftCode)) toast('현황판 코드를 복사했어요'); return; }
+    if(a==='shareGift'){
+      const text = `💌 ${view.client.name}님 ${view.client.sideLabel? view.client.sideLabel+' ' : ''}실시간 축의 현황\n아래 링크를 누르면 바로 열려요 (현황판 코드: ${view.live.giftCode})\n${view.live.giftUrl}`;
+      if(navigator.share){ try{ await navigator.share({text}); }catch(_){} } else if(await copyText(text)) toast('현황판 링크를 복사했어요');
       return;
     }
     if(a==='shareLive'){
