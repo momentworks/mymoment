@@ -42,8 +42,12 @@ html,body{margin:0;padding:0;background:#F7F5F0;}
 .cp-dday{font-family:'Cormorant Garamond','Noto Serif KR',serif;font-size:64px;font-weight:700;line-height:1.05;letter-spacing:.04em;margin:10px 0 4px;
   background:linear-gradient(180deg,#FFF6E3 0%,#F2DDB0 38%,#D4AF6A 62%,#F5E3BC 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
   filter:drop-shadow(0 2px 6px rgba(0,0,0,.28));font-variant-numeric:lining-nums;}
+.cp-dday span{background:inherit;-webkit-background-clip:text;background-clip:text;color:transparent;}
+.cp-dday:not(.done){display:flex;justify-content:center;align-items:baseline;gap:.14em;background:none;}
+.cp-dday:not(.done) span{background-image:linear-gradient(180deg,#FFF6E3 0%,#F2DDB0 38%,#D4AF6A 62%,#F5E3BC 100%);}
+.cp-dash{display:inline-block;width:.34em;height:.075em;border-radius:.04em;transform:translateY(-.28em);background:linear-gradient(90deg,#E9CF98,#D4AF6A);flex:0 0 auto;}
 .cp-dday.done{font-family:'Noto Serif KR',serif;font-size:40px;letter-spacing:.02em;}
-.cp-dday::after{content:'';display:block;width:42px;height:1px;margin:10px auto 0;background:linear-gradient(90deg,transparent,#D4AF6A,transparent);}
+.cp-dday + .cp-dsub::before{content:'';display:block;width:42px;height:1px;margin:2px auto 10px;background:linear-gradient(90deg,transparent,#D4AF6A,transparent);}
 .cp-dsub{font-size:12.5px;color:#E7D9C2;}
 .cp-when{margin:14px auto 16px;font-size:14px;line-height:1.7;border-top:1px solid rgba(255,255,255,.18);border-bottom:1px solid rgba(255,255,255,.18);padding:10px 0;}
 .cp-hero-acts{display:flex;gap:8px;}
@@ -230,7 +234,7 @@ const CustomerPortal = (function(){
     const sub = n===null ? '예식 일정이 정해지면 여기에 표시돼요' : n>0 ? '예식까지 남은 날' : n===0 ? '오늘 예식을 진심으로 축하드려요 💐' : '소중한 날을 함께해 주셔서 감사합니다';
     return `<section class="cp-hero">
       <div class="cp-hello">${view.client.sideLabel? `<span class="cp-side">${e(view.client.sideLabel)}</span>`:''}${e(view.client.name)}님의 예식</div>
-      <div class="cp-dday${n!==null && n<0 ? ' done' : ''}">${big}</div>
+      <div class="cp-dday${n!==null && n<0 ? ' done' : ''}">${n!==null && n>=0 ? `<span>D</span><i class="cp-dash" aria-hidden="true"></i><span>${n>0? n : 'DAY'}</span>` : big}</div>
       <div class="cp-dsub">${sub}</div>
       <div class="cp-when"><b>${fdate(w.date, true)}</b>${w.time? ` · ${e(w.time)}` : ''}<br>${e(w.venue)} ${e(w.hall)}</div>
       <div class="cp-hero-acts">
