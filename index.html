@@ -36,7 +36,11 @@ html,body{margin:0;padding:0;background:#F7F5F0;}
 .cp-role{font-family:'Pretendard',sans-serif;font-size:11px;font-weight:700;background:var(--cp-gold-s);color:#7A5E27;border-radius:2px;padding:2px 9px;flex:0 0 auto;}
 .cp-top-acts{display:flex;gap:6px;flex:0 0 auto;}
 .cp-icon,.cp-ghost{white-space:nowrap;border:1px solid var(--cp-line);background:#fff;color:var(--cp-ink);border-radius:2px;padding:5px 12px;font:inherit;font-size:12px;font-weight:600;cursor:pointer;}
-.cp-icon{padding:5px 10px;font-size:14px;line-height:1;}
+.cp-icon{width:38px;height:38px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;color:var(--cp-soft);transition:color .15s,border-color .15s,background .15s;}
+.cp-icon:hover{color:var(--cp-wine);border-color:var(--cp-gold);background:#FFFDF8;}
+.cp-icon:active svg{transform:scale(.92);}
+.cp-busy ~ .cp-top .cp-icon[data-cp=refresh] svg{animation:cpSpin .8s linear infinite;}
+@keyframes cpSpin{to{transform:rotate(360deg)}}
 .cp-icon:hover,.cp-ghost:hover{border-color:var(--cp-ink);}
 .cp-nav{display:flex;overflow-x:auto;padding:0 8px;position:sticky;top:0;z-index:10;scrollbar-width:none;background:#1C1719;border-bottom:3px solid var(--cp-gold);}
 .cp-nav::-webkit-scrollbar{display:none;}
@@ -107,6 +111,10 @@ html,body{margin:0;padding:0;background:#F7F5F0;}
 .cp-toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:#1F1A1C;color:#fff;padding:11px 18px;border-radius:999px;font-size:13px;opacity:0;transition:all .25s;z-index:200;pointer-events:none;max-width:90vw;text-align:center;}
 .cp-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 .cp-side{display:inline-block;background:var(--cp-gold);color:#fff;font-size:11px;font-weight:800;letter-spacing:.04em;border-radius:999px;padding:2px 9px;margin-right:6px;vertical-align:middle;}
+.cp-greet{padding:6px 4px 2px;}
+.cp-greet-t{font-family:'Noto Serif KR',serif;font-size:18px;font-weight:700;line-height:1.45;letter-spacing:-.01em;word-break:keep-all;}
+.cp-greet-s{font-size:13px;color:var(--cp-soft);margin-top:6px;line-height:1.7;word-break:keep-all;}
+.cp-greet-s b{color:var(--cp-wine);border-bottom:1px solid var(--cp-gold);}
 
 /* ================= 접속 메인화면 (모먼트웍스 로고) ================= */
 .mw-entry{position:fixed;inset:0;z-index:500;overflow-y:auto;background:#F7F5F0;background-image:radial-gradient(ellipse at 50% 38%, #FFFFFF 0%, #F7F5F0 55%, #EFEBE3 100%);color:#1A1618;
@@ -178,6 +186,9 @@ const MW_LOGO_MARK_LIGHT='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAABz
 const CustomerPortal = (function(){
   const WD = ['일','월','화','수','목','금','토'];
   let root=null, view=null, H={}, busy=false, giftOpen=false, navOn=null;
+  const SVG = d=> `<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  const ICON_REFRESH = SVG('<path d="M20 11a8 8 0 1 0-2.34 5.66"/><path d="M20 4v7h-7"/>');
+  const ICON_LOGOUT = SVG('<path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4"/><path d="M15 8l4 4-4 4"/><path d="M19 12H9"/>');
   const pd = n => String(n).padStart(2,'0');
   const e = s => (s===undefined||s===null) ? '' : String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const won = n => (Number(n)||0).toLocaleString('ko-KR')+'원';
@@ -245,6 +256,18 @@ const CustomerPortal = (function(){
   }
 
   /* ---------- 화면 ---------- */
+  function greetHTML(){
+    const n = dday(view.wedding.date), nm = e(view.client.name), sk = view.client.side;
+    const who = sk==='groom' ? `신랑 ${nm}님` : sk==='bride' ? `신부 ${nm}님` : `${nm}님`;
+    let t, m;
+    if(n===null){ t = `${who}, 결혼을 진심으로 축하드려요 💐`; m = '두 분의 새로운 시작을 모먼트웍스가 정성껏 함께할게요 🤍'; }
+    else if(n>30){ t = `${who}, 결혼을 진심으로 축하드려요 💐`; m = `설레는 예식까지 <b>${n}일</b> 남았어요 💍<br>준비하시는 모든 순간이 행복으로 가득하길 바라요 ✨`; }
+    else if(n>7){ t = `${who}, 예식이 다가오고 있어요 💝`; m = `두 분의 가장 빛나는 날까지 <b>${n}일</b> 🗓️<br>축의대는 모먼트웍스가 꼼꼼히 챙길게요. 마음 편히 준비하세요 😊`; }
+    else if(n>0){ t = `${who}, 드디어 이번 주예요 🥂`; m = `행복한 예식까지 <b>${n}일</b> 남았어요 💐<br>남은 준비도 설렘으로 가득하시길 바라요 🤍`; }
+    else if(n===0){ t = `${who}, 결혼을 진심으로 축하드립니다 🎉`; m = '오늘 두 분의 앞날에 사랑과 웃음이 가득하길 바라요 💍✨<br>축의대는 모먼트웍스가 끝까지 책임질게요 🙌'; }
+    else { t = `${who}, 다시 한번 결혼을 축하드려요 💕`; m = '소중한 날을 모먼트웍스와 함께해 주셔서 감사합니다 🙏<br>두 분의 앞날에 늘 행복이 함께하길 바라요 🍀'; }
+    return `<section class="cp-greet"><div class="cp-greet-t">${t}</div><div class="cp-greet-s">${m}</div></section>`;
+  }
   function heroHTML(){
     const w = view.wedding, n = dday(w.date);
     const big = n===null ? '' : n>0 ? 'D-'+n : n===0 ? 'D-DAY' : '예식 완료';
@@ -397,13 +420,14 @@ const CustomerPortal = (function(){
           ${typeof MW_LOGO_MARK!=='undefined' ? `<img class="cp-mark" src="${MW_LOGO_MARK}" alt="Moment Works">` : ''}
           <div>
             <div class="cp-brand">My Moment</div>
-            <div class="cp-who">${e(view.client.name)}님<span class="cp-role">${view.client.sideLabel? e(view.client.sideLabel) : '고객'}</span></div>
+            <div class="cp-who">${e(view.client.name)}님${view.client.sideLabel? `<span class="cp-role">${e(view.client.sideLabel)}</span>` : ''}</div>
           </div>
         </div>
-        <div class="cp-top-acts"><button class="cp-icon" data-cp="refresh" title="새로고침">↻</button>${H.preview? '' : '<button class="cp-ghost" data-cp="logout">로그아웃</button>'}</div>
+        <div class="cp-top-acts"><button class="cp-icon" data-cp="refresh" title="새로고침" aria-label="새로고침">${ICON_REFRESH}</button>${H.preview? '' : `<button class="cp-icon" data-cp="logout" title="로그아웃" aria-label="로그아웃">${ICON_LOGOUT}</button>`}</div>
       </header>
       <nav class="cp-nav">${nav.map(([id,l],i)=>`<button class="${(navOn||nav[0][0])===id?'on':''}" data-cp="go" data-v="${id}">${l}</button>`).join('')}</nav>
       <main class="cp-main">
+        ${greetHTML()}
         ${heroHTML()}
         ${noticeHTML()}
         ${alarmHTML()}
