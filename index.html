@@ -188,37 +188,48 @@ const CustomerPortal = (function(){
 
   /* ---------- 캘린더 알림 (.ics) ---------- */
   function icsEsc(s){ return String(s||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n'); }
+  // 축의대 운영서 제출기한 알림: 예식 10일 전 · 5일 전 오전 10시
+  const REMIND_DAYS = [10, 5];
+  function remindDates(){
+    const w = view.wedding; if(!w.date) return [];
+    const [y,m,d] = w.date.split('-').map(Number);
+    const today = todayStr();
+    return REMIND_DAYS.map(n=>{ const x = new Date(y, m-1, d-n); return {n, date: x.getFullYear()+'-'+pd(x.getMonth()+1)+'-'+pd(x.getDate())}; })
+      .filter(r=> !today || r.date >= today);
+  }
+  function remindText(n){
+    const w = view.wedding, f = view.info && view.info.settingsFormUrl;
+    return {title: `📝 축의대 운영서 제출 (예식 ${n}일 전)`,
+      body: `${view.client.name}님 예식(${fdate(w.date, true)} ${w.time||''})까지 ${n}일 남았어요.\n축의대 운영서를 아직 제출하지 않으셨다면 오늘 작성해주세요.`
+        + (f ? `\n작성하기: ${f}` : '') + `\n고객 전용 페이지: ${location.href.split('#')[0]}`};
+  }
   function buildIcs(){
-    const w = view.wedding; if(!w.date) return '';
-    const t = /^\d{1,2}:\d{2}/.test(w.time||'') ? w.time : '12:00';
-    const [hh,mm] = t.split(':').map(Number);
-    const end = new Date(2000,0,1,hh,mm+120);
-    const dt = (d, h, m)=> d.replace(/-/g,'')+'T'+pd(h)+pd(m)+'00';
+    const list = remindDates(); if(!list.length) return '';
     const stamp = new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d+/,'');
-    const desc = `모먼트웍스 축의대 · ${w.venue} ${w.hall}\n고객 전용 페이지: ${location.href.split('#')[0]}`;
-    const L = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//MomentWorks//Customer//KO','CALSCALE:GREGORIAN','METHOD:PUBLISH',
-      'BEGIN:VEVENT','UID:wedding-'+(view.client.code||'mw')+'@momentworks','DTSTAMP:'+stamp,
-      'DTSTART;TZID=Asia/Seoul:'+dt(w.date,hh,mm),'DTEND;TZID=Asia/Seoul:'+dt(w.date,end.getHours(),end.getMinutes()),
-      'SUMMARY:'+icsEsc(`💍 ${view.client.name}님 예식`),'LOCATION:'+icsEsc((w.venue+' '+w.hall).trim()),'DESCRIPTION:'+icsEsc(desc),
-      'BEGIN:VALARM','TRIGGER:-P7D','ACTION:DISPLAY','DESCRIPTION:'+icsEsc('예식 일주일 전이에요 · 축의대 운영 설정서를 확인해주세요'),'END:VALARM',
-      'BEGIN:VALARM','TRIGGER:-P1D','ACTION:DISPLAY','DESCRIPTION:'+icsEsc('내일 예식이에요 · 모먼트웍스가 함께할게요'),'END:VALARM',
-      'BEGIN:VALARM','TRIGGER:-PT3H','ACTION:DISPLAY','DESCRIPTION:'+icsEsc('오늘 예식이에요 · 축하드려요 💐'),'END:VALARM',
-      'END:VEVENT','END:VCALENDAR'];
+    const L = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//MomentWorks//Customer//KO','CALSCALE:GREGORIAN','METHOD:PUBLISH'];
+    list.forEach(r=>{
+      const t = remindText(r.n), d = r.date.replace(/-/g,'');
+      L.push('BEGIN:VEVENT','UID:mw-form-d'+r.n+'-'+(view.client.code||'mw')+'@momentworks','DTSTAMP:'+stamp,
+        'DTSTART;TZID=Asia/Seoul:'+d+'T100000','DTEND;TZID=Asia/Seoul:'+d+'T103000',
+        'SUMMARY:'+icsEsc(t.title),'DESCRIPTION:'+icsEsc(t.body),
+        'BEGIN:VALARM','TRIGGER:PT0M','ACTION:DISPLAY','DESCRIPTION:'+icsEsc(t.title),'END:VALARM',
+        'END:VEVENT');
+    });
+    L.push('END:VCALENDAR');
     return L.join('\r\n');
   }
   function downloadIcs(){
-    const s = buildIcs(); if(!s){ toast('예식 일정이 아직 없어요'); return; }
+    const w = view.wedding;
+    if(!w.date){ toast('예식 일정이 아직 없어요'); return; }
+    const s = buildIcs(); if(!s){ toast('운영서 제출 알림 기간(예식 10일 전 · 5일 전)이 이미 지났어요'); return; }
     const blob = new Blob([s], {type:'text/calendar;charset=utf-8'});
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'momentworks-wedding.ics';
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'momentworks-form-reminder.ics';
     document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 500);
-    toast('캘린더에 추가하면 7일 전 · 1일 전 · 당일에 알림이 와요');
+    toast('캘린더에 추가하면 예식 ' + remindDates().map(r=>r.n+'일 전').join(' · ') + '에 운영서 제출 알림이 와요');
   }
-  function googleCalUrl(){
-    const w = view.wedding; if(!w.date) return '';
-    const t = /^\d{1,2}:\d{2}/.test(w.time||'') ? w.time : '12:00'; const [hh,mm] = t.split(':').map(Number);
-    const end = new Date(2000,0,1,hh,mm+120);
-    const d = w.date.replace(/-/g,'');
-    const q = new URLSearchParams({action:'TEMPLATE', text:`💍 ${view.client.name}님 예식`, dates:`${d}T${pd(hh)}${pd(mm)}00/${d}T${pd(end.getHours())}${pd(end.getMinutes())}00`, ctz:'Asia/Seoul', location:(w.venue+' '+w.hall).trim(), details:'모먼트웍스 축의대 · '+location.href.split('#')[0]});
+  function googleCalUrl(r){
+    const t = remindText(r.n), d = r.date.replace(/-/g,'');
+    const q = new URLSearchParams({action:'TEMPLATE', text:t.title, dates:`${d}T100000/${d}T103000`, ctz:'Asia/Seoul', details:t.body});
     return 'https://calendar.google.com/calendar/render?'+q.toString();
   }
   function ytEmbed(url){
@@ -238,16 +249,20 @@ const CustomerPortal = (function(){
       <div class="cp-dsub">${sub}</div>
       <div class="cp-when"><b>${fdate(w.date, true)}</b>${w.time? ` · ${e(w.time)}` : ''}<br>${e(w.venue)} ${e(w.hall)}</div>
       <div class="cp-hero-acts">
-        <button class="cp-btn gold" data-cp="ics">🔔 예식 알림 받기</button>
+        <button class="cp-btn gold" data-cp="go" data-v="cp-alarm">🔔 운영서 제출 알림</button>
         <a class="cp-btn ghost" href="https://map.naver.com/v5/search/${encodeURIComponent(w.venue||'')}" target="_blank" rel="noopener">📍 길찾기</a>
       </div>
     </section>`;
   }
   function alarmHTML(){
-    const g = googleCalUrl();
-    return `<section class="cp-card" id="cp-alarm"><h2>🔔 예식 일정 알림</h2>
-      <p class="cp-desc">휴대폰 캘린더에 추가하면 <b>예식 7일 전 · 1일 전 · 당일 3시간 전</b>에 알림을 받으실 수 있어요.</p>
-      <div class="cp-row2"><button class="cp-btn" data-cp="ics">📅 휴대폰 캘린더에 추가</button>${g? `<a class="cp-btn ghost" href="${e(g)}" target="_blank" rel="noopener">Google 캘린더</a>`:''}</div>
+    const list = remindDates();
+    return `<section class="cp-card" id="cp-alarm"><h2>🔔 축의대 운영서 제출기한 알림</h2>
+      <p class="cp-desc">휴대폰 캘린더에 추가하면 예식 10일 전 · 5일 전에 알림을 받으실 수 있어요.</p>
+      ${!view.wedding.date ? '<div class="cp-empty">예식 일정이 정해지면 알림을 추가할 수 있어요</div>'
+        : !list.length ? '<div class="cp-empty">제출 알림 기간(예식 10일 전 · 5일 전)이 지났어요</div>'
+        : `<button class="cp-btn wide" data-cp="ics">📅 휴대폰 캘린더에 추가</button>
+      <div class="cp-row2" style="margin-top:8px;font-size:12.5px;">${list.map(r=>`<a class="cp-btn ghost" style="font-size:13px;padding:11px 8px;white-space:nowrap;" href="${e(googleCalUrl(r))}" target="_blank" rel="noopener">Google 캘린더 · ${r.n}일 전</a>`).join('')}</div>
+      <p class="cp-note">${list.map(r=>`${r.n}일 전 ${fdate(r.date)} 오전 10시`).join(' · ')}</p>`}
     </section>`;
   }
   function weddingHTML(){
