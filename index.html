@@ -133,6 +133,21 @@ html,body{margin:0;padding:0;background:#F7F5F0;}
 .cp-live-wait b{font-size:15.5px;line-height:1.55;word-break:keep-all;}
 .cp-live-wait span{font-size:12.5px;color:#E9CF98;font-weight:700;background:rgba(233,207,152,.12);border-radius:999px;padding:5px 12px;}
 .cp-live-wait small{font-size:11.5px;color:#C9BFB2;}
+.cp-live-go{position:relative;overflow:hidden;text-decoration:none;cursor:pointer;}
+.cp-live-go::before{content:'';position:absolute;inset:0;background-image:var(--thumb, none);background-size:cover;background-position:center;opacity:.28;filter:blur(1px);}
+.cp-live-go>*{position:relative;}
+.cp-live-go em{font-style:normal;margin-top:6px;background:#FF0033;color:#fff;font-weight:800;font-size:14px;border-radius:999px;padding:10px 20px;box-shadow:0 6px 16px rgba(255,0,51,.35);}
+.cp-live-go:active em{transform:scale(.97);}
+.cp-live-go .cp-live-badge{position:absolute !important;top:12px;left:12px;font-size:11px;font-weight:800;letter-spacing:.06em;color:#fff;background:rgba(255,0,51,.9);border-radius:4px;padding:3px 8px;}
+.cp-gift-main{font-size:15px;padding:14px;}
+.cp-gift-sub{margin-top:8px;}
+.cp-gift-sub .cp-btn{font-size:13.5px;padding:11px 10px;}
+.cp-gift-code{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:12px;border:none;background:none;font:inherit;font-size:12px;color:var(--cp-soft);cursor:pointer;padding:6px;}
+.cp-gift-code span{color:var(--cp-gold);font-weight:700;}
+.cp-gift-code:hover{color:var(--cp-ink);}
+.cp-gift-codebox{display:flex;align-items:center;justify-content:center;gap:10px;background:#FAF7F1;border:1px dashed var(--cp-line);border-radius:10px;padding:9px 12px;margin-top:4px;}
+.cp-gift-codebox b{font-size:15px;letter-spacing:.08em;color:var(--cp-wine);}
+.cp-gift-codebox button{border:1px solid var(--cp-line);background:#fff;border-radius:999px;padding:4px 11px;font:inherit;font-size:11.5px;font-weight:700;cursor:pointer;}
 
 /* ================= 접속 메인화면 (모먼트웍스 로고) ================= */
 .mw-entry{position:fixed;inset:0;z-index:500;overflow-y:auto;background:#F7F5F0;background-image:radial-gradient(ellipse at 50% 38%, #FFFFFF 0%, #F7F5F0 55%, #EFEBE3 100%);color:#1A1618;
@@ -379,12 +394,16 @@ const CustomerPortal = (function(){
     const l = view.live, n = dday(view.wedding.date);
     const streams = (Array.isArray(l.streams) && l.streams.length) ? l.streams : (l.youtube ? [{key:'', label:'', url:l.youtube}] : []);
     if(liveSel >= streams.length) liveSel = 0;
-    const cur = streams[liveSel] || {}, emb = ytEmbed(cur.url);
+    const cur = streams[liveSel] || {}, emb = cur.url ? true : false;
+    const vid = (String(cur.url||'').match(/(?:youtu\.be\/|v=|\/live\/|\/embed\/|\/shorts\/)([A-Za-z0-9_-]{6,})/)||[])[1] || '';
     const tabs = streams.length>1 ? `<div class="cp-live-tabs">${streams.map((st,i)=>`<button class="${i===liveSel?'on':''}" data-cp="liveSel" data-v="${i}">${st.key==='bride'?'👰':'🤵'} ${e(st.label)} 라이브</button>`).join('')}</div>` : '';
     return `<section class="cp-card" id="cp-live"><h2>🎥 유튜브 실시간 라이브</h2>
       ${tabs}
-      ${emb ? `<div class="cp-video"><iframe src="${e(emb)}" title="예식 라이브${cur.label?' · '+e(cur.label):''}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
-        <div class="cp-row2"><button class="cp-btn primary" data-cp="shareLive">🔗 링크 공유하기</button><a class="cp-btn ghost" href="${e(cur.url)}" target="_blank" rel="noopener">▶ 유튜브에서 보기</a></div>
+      ${emb ? `<a class="cp-live-wait cp-live-go" href="${e(cur.url)}" target="_blank" rel="noopener"${vid? ` style="--thumb:url('https://i.ytimg.com/vi/${e(vid)}/hqdefault.jpg')"`:''}>
+          <span class="cp-live-badge">● LIVE${cur.label? ' · '+e(cur.label) : ''}</span>
+          <div class="ic">📺</div><b>${e(view.client.contractName||view.client.name)}님 결혼식<br>유튜브 라이브</b>${liveStart()? `<span>⏰ ${fdate(view.wedding.date)} ${liveStart()}부터 시청 가능</span>`:''}
+          <em>▶ 유튜브에서 라이브 보기</em></a>
+        <button class="cp-btn primary wide" data-cp="shareLive">🔗 라이브 링크 공유하기</button>
         <p class="cp-note">⏰ 유튜브 라이브는 <b>예식 당일 1시간 전${liveStart()? `(${liveStart()})`:''}부터</b> 중계가 시작돼요.<br>🔗 라이브 링크를 공유하면 오시지 못하는 분들도 예식을 함께 보실 수 있어요 💐</p>`
         : (n!==null && n<0 ? `<div class="cp-empty">라이브 영상이 등록되지 않았어요</div>`
           : `<div class="cp-live-wait"><div class="ic">📺</div><b>유튜브 라이브는 예식 당일<br>1시간 전부터 중계가 시작돼요</b>${liveStart()? `<span>⏰ ${fdate(view.wedding.date)} ${liveStart()}부터 시청 가능</span>`:''}<small>중계가 시작되면 이 자리에서 바로 보실 수 있어요 🎥</small></div>
@@ -392,16 +411,22 @@ const CustomerPortal = (function(){
         <p class="cp-note">🔗 라이브 링크는 예식 전에 등록되며, 공유하면 오시지 못하는 분들도 예식을 함께 보실 수 있어요 💐</p>`)}
     </section>`;
   }
+  let giftCodeOpen = false;
   function giftHTML(){
     const l = view.live || {};
     const u = l.giftUrl || 'https://momentworks.github.io/arrange/', code = l.giftCode || '';
+    const nm = e(view.client.name);
     return `<section class="cp-card" id="cp-gift"><h2>💌 실시간 축의 현황</h2>
-      <p class="cp-desc">예식 당일 ${view.client.sideLabel? `<b>${e(view.client.sideLabel)}</b> ` : ''}축의대에서 접수되는 축의 내역을 실시간으로 확인하실 수 있어요.</p>
-      ${code ? `<div class="cp-code"><span>현황판 코드</span><b>${e(code)}</b><div class="cp-row2"><button class="cp-btn gold" data-cp="shareGift">현황판 공유하기</button><button class="cp-btn ghost" data-cp="copyGift">코드 복사</button></div></div>
-        <p class="cp-note">버튼을 누르면 코드가 자동 입력되어 바로 접속돼요.</p>`
-        : `<p class="cp-note">현황판 코드는 예식 전에 모먼트웍스에서 등록해드려요. 코드를 받으셨다면 열린 화면의 <b>실시간 축의 현황</b> 탭에 입력해주세요.</p>`}
-      <div class="cp-row2"><a class="cp-btn primary" href="${e(u)}" target="_blank" rel="noopener">실시간 축의 현황 열기</a><button class="cp-btn ghost" data-cp="giftToggle">${giftOpen? '접기' : '여기서 보기'}</button></div>
+      <p class="cp-desc">예식 당일 ${view.client.sideLabel? `<b>${e(view.client.sideLabel)}</b> ` : ''}축의대에서 접수되는 축의 내역을 실시간으로 확인하실 수 있어요.${code? ' 버튼을 누르면 <b>자동으로 로그인</b>돼요.' : ''}</p>
+      <a class="cp-btn primary wide cp-gift-main" href="${e(u)}" target="_blank" rel="noopener">💌 실시간 축의 현황 확인하기</a>
+      <div class="cp-row2 cp-gift-sub">
+        <button class="cp-btn ghost" data-cp="giftToggle">${giftOpen? '▲ 접기' : '📱 여기서 바로 보기'}</button>
+        ${code? `<button class="cp-btn ghost" data-cp="shareGift">🔗 공유하기</button>` : `<a class="cp-btn ghost" href="${e(u)}" target="_blank" rel="noopener">새 창으로 열기</a>`}
+      </div>
       ${giftOpen? `<div class="cp-frame"><iframe src="${e(u)}" title="실시간 축의 현황" loading="lazy"></iframe></div>`:''}
+      ${code ? `<button class="cp-gift-code ${giftCodeOpen?'open':''}" data-cp="giftCode" aria-expanded="${giftCodeOpen}">🔑 ${nm}님 실시간 축의 현황 확인코드 <span>${giftCodeOpen? '닫기 ▴' : '보기 ▾'}</span></button>
+        ${giftCodeOpen? `<div class="cp-gift-codebox"><b>${e(code)}</b><button data-cp="copyGift">복사</button></div>` : ''}`
+        : `<p class="cp-note">🔑 확인코드는 예식 전에 모먼트웍스에서 등록해드려요. 코드를 받으셨다면 열린 화면의 <b>실시간 축의 현황</b> 탭에 입력해주세요.</p>`}
     </section>`;
   }
   function referralHTML(){
@@ -529,6 +554,7 @@ const CustomerPortal = (function(){
       return;
     }
     if(a==='contractDownload'){ downloadDoc(el); return; }
+    if(a==='giftCode'){ giftCodeOpen = !giftCodeOpen; render(); return; }
     if(a==='copyGift'){ if(await copyText(view.live.giftCode)) toast('현황판 코드를 복사했어요'); return; }
     if(a==='shareGift'){
       const text = `💌 ${view.client.name}님 ${view.client.sideLabel? view.client.sideLabel+' ' : ''}실시간 축의 현황\n아래 링크를 누르면 바로 열려요 (현황판 코드: ${view.live.giftCode})\n${view.live.giftUrl}`;
