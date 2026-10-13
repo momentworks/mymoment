@@ -125,6 +125,9 @@ html,body{margin:0;padding:0;background:#F7F5F0;}
 .cp-install-bar span{flex:1;line-height:1.5;word-break:keep-all;} .cp-install-bar b{color:var(--cp-ink);}
 .cp-install-bar button{border:none;background:#1C1719;color:#fff;border-radius:8px;padding:8px 13px;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;}
 .cp-install-bar button.x{background:none;color:#8A857C;padding:4px 6px;font-size:15px;}
+.cp-live-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:-2px 0 10px;}
+.cp-live-tabs button{border:1px solid var(--cp-line);background:#fff;border-radius:10px;padding:10px 8px;font:inherit;font-size:13px;font-weight:700;color:var(--cp-soft);cursor:pointer;}
+.cp-live-tabs button.on{background:#1C1719;border-color:#1C1719;color:#fff;}
 
 /* ================= 접속 메인화면 (모먼트웍스 로고) ================= */
 .mw-entry{position:fixed;inset:0;z-index:500;overflow-y:auto;background:#F7F5F0;background-image:radial-gradient(ellipse at 50% 38%, #FFFFFF 0%, #F7F5F0 55%, #EFEBE3 100%);color:#1A1618;
@@ -195,7 +198,7 @@ const MW_LOGO_MARK_LIGHT='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAABz
 ================================================================================================ */
 const CustomerPortal = (function(){
   const WD = ['일','월','화','수','목','금','토'];
-  let root=null, view=null, H={}, busy=false, giftOpen=false, navOn=null;
+  let root=null, view=null, H={}, busy=false, giftOpen=false, navOn=null, liveSel=0;
   const SVG = d=> `<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
   const ICON_REFRESH = SVG('<path d="M20 11a8 8 0 1 0-2.34 5.66"/><path d="M20 4v7h-7"/>');
   const ICON_LOGOUT = SVG('<path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4"/><path d="M15 8l4 4-4 4"/><path d="M19 12H9"/>');
@@ -363,10 +366,15 @@ const CustomerPortal = (function(){
     finally{ dlBusy = false; if(btn){ btn.textContent = old; btn.disabled = false; } }
   }
   function liveHTML(){
-    const l = view.live, emb = ytEmbed(l.youtube), n = dday(view.wedding.date);
+    const l = view.live, n = dday(view.wedding.date);
+    const streams = (Array.isArray(l.streams) && l.streams.length) ? l.streams : (l.youtube ? [{key:'', label:'', url:l.youtube}] : []);
+    if(liveSel >= streams.length) liveSel = 0;
+    const cur = streams[liveSel] || {}, emb = ytEmbed(cur.url);
+    const tabs = streams.length>1 ? `<div class="cp-live-tabs">${streams.map((st,i)=>`<button class="${i===liveSel?'on':''}" data-cp="liveSel" data-v="${i}">${st.key==='bride'?'👰':'🤵'} ${e(st.label)} 라이브</button>`).join('')}</div>` : '';
     return `<section class="cp-card" id="cp-live"><h2>🎥 유튜브 실시간 라이브</h2>
-      ${emb ? `<div class="cp-video"><iframe src="${e(emb)}" title="예식 라이브" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
-        <div class="cp-row2"><a class="cp-btn ghost" href="${e(l.youtube)}" target="_blank" rel="noopener">유튜브에서 보기</a><button class="cp-btn ghost" data-cp="shareLive">🔗 라이브 링크 공유</button></div>
+      ${tabs}
+      ${emb ? `<div class="cp-video"><iframe src="${e(emb)}" title="예식 라이브${cur.label?' · '+e(cur.label):''}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+        <div class="cp-row2"><a class="cp-btn ghost" href="${e(cur.url)}" target="_blank" rel="noopener">유튜브에서 보기</a><button class="cp-btn ghost" data-cp="shareLive">🔗 라이브 링크 공유</button></div>
         <p class="cp-note">라이브 링크를 공유하면 오시지 못하는 분들도 예식을 함께 보실 수 있어요.</p>`
         : `<div class="cp-empty">${n!==null && n<0 ? '라이브 영상이 등록되지 않았어요' : '예식 당일 라이브 링크가 여기에 열려요'}</div>`}
     </section>`;
@@ -500,6 +508,7 @@ const CustomerPortal = (function(){
       return;
     }
     if(a==='installHide'){ try{ localStorage.setItem('cp_install_hide','1'); }catch(_){} render(); return; }
+    if(a==='liveSel'){ liveSel = Number(el.dataset.v)||0; render(); const t=document.getElementById('cp-live'); if(t) t.scrollIntoView({block:'start'}); return; }
     if(a==='recCopy'){ if(await copyText(recommendText())) toast('추천 글을 복사했어요'); return; }
     if(a==='shareCode'){
       const text = `💍 모먼트웍스 축의대 대행 서비스\n계약할 때 짝꿍코드 [${view.referral.code}] 를 입력하면 할인을 받을 수 있어요!\n상담: ${view.info.kakao}`;
@@ -514,7 +523,8 @@ const CustomerPortal = (function(){
       return;
     }
     if(a==='shareLive'){
-      const text = `💍 ${view.client.name}님 예식 라이브\n${fdate(view.wedding.date, true)} ${view.wedding.time}\n${view.live.youtube}`;
+      const sts = (Array.isArray(view.live.streams) && view.live.streams.length) ? view.live.streams : [{label:'', url:view.live.youtube}];
+      const text = `💍 ${view.client.contractName||view.client.name}님 예식 라이브\n${fdate(view.wedding.date, true)} ${view.wedding.time}\n` + sts.map(st=> (st.label? `${st.label}: ` : '') + st.url).join('\n');
       if(navigator.share){ try{ await navigator.share({text}); }catch(_){} } else if(await copyText(text)) toast('라이브 링크를 복사했어요');
       return;
     }
