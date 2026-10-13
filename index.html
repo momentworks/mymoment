@@ -148,6 +148,47 @@ html,body{margin:0;padding:0;background:#F7F5F0;}
 .cp-gift-codebox{display:flex;align-items:center;justify-content:center;gap:10px;background:#FAF7F1;border:1px dashed var(--cp-line);border-radius:10px;padding:9px 12px;margin-top:4px;}
 .cp-gift-codebox b{font-size:15px;letter-spacing:.08em;color:var(--cp-wine);}
 .cp-gift-codebox button{border:1px solid var(--cp-line);background:#fff;border-radius:999px;padding:4px 11px;font:inherit;font-size:11.5px;font-weight:700;cursor:pointer;}
+/* 예식 안내문 · A. 온-비비드 (하객 안내문 생성기와 동일한 A4 원본을 축소해서 표시) */
+.gd-a4wrap{position:relative;width:100%;overflow:hidden;border-radius:6px;box-shadow:0 10px 30px rgba(58,46,38,.14);background:#fff;}
+.gd-a4{--g-ink:#3A2E26;--g-soft:#6F6055;--g-rose:#B8916B;--g-rose-d:#9C7550;--g-line:#E6DCCB;--g-ivory-d:#F3EBE0;--g-groom:#5C7CA6;--g-bride:#C77D86;
+  width:210mm;height:297mm;background:#fff;box-sizing:border-box;padding:5mm;overflow:hidden;transform-origin:top left;position:absolute;top:0;left:0;
+  font-family:'Pretendard','Malgun Gothic',sans-serif;color:var(--g-ink);text-align:center;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+.gd-a4 *{box-sizing:border-box;}
+.gd-a4 .sheet-frame{width:100%;height:100%;border:.7mm double var(--g-rose);border-radius:1.5mm;padding:7mm 4mm 3mm;overflow:hidden;position:relative;display:flex;flex-direction:column;align-items:center;background:radial-gradient(ellipse at top, rgba(184,145,107,.07), transparent 65%);}
+.gd-a4 .sheet-content{display:flex;flex-direction:column;width:100%;flex-shrink:0;transform-origin:top center;}
+.gd-a4 .sheet-mark{text-align:center;}
+.gd-a4 .sheet-mark img{height:16mm;width:auto;margin:0 auto 5.5mm;display:block;}
+.gd-a4 .sheet-couple{text-align:center;font-size:12mm;font-weight:700;color:var(--g-ink);margin-top:2.5mm;line-height:1.25;letter-spacing:.02em;}
+.gd-a4 .sheet-date{text-align:center;font-size:7mm;font-weight:600;color:var(--g-soft);margin-top:5mm;letter-spacing:.3mm;line-height:1.2;}
+.gd-a4 .sheet-hr{width:16mm;height:.4mm;background:var(--g-rose);margin:6mm auto;}
+.gd-a4 .sheet-side-badge{display:block;width:fit-content;margin:0 auto 7mm;font-size:3.4mm;font-weight:700;letter-spacing:.6mm;line-height:1.2;padding:1.6mm 5mm;border-radius:999px;}
+.gd-a4 .sheet-side-badge.groom{background:#EAF0F6;color:var(--g-groom);}
+.gd-a4 .sheet-side-badge.bride{background:#FBEEEF;color:var(--g-bride);}
+.gd-a4 .sheet-rows{display:grid;grid-template-columns:1fr 1fr;gap:9mm;align-content:start;align-items:stretch;}
+.gd-a4 .sheet-row{display:flex;flex-direction:column;align-items:center;text-align:center;border:.4mm solid var(--g-line);border-radius:3.5mm;padding:3.4mm 4mm;background:rgba(250,246,240,.55);}
+.gd-a4 .sheet-row:nth-last-child(1):nth-child(odd){grid-column:1 / -1;}
+.gd-a4 .sheet-icon{width:20mm;height:20mm;border-radius:50%;flex-shrink:0;margin-bottom:2.2mm;display:flex;align-items:center;justify-content:center;box-shadow:0 1mm 2.5mm rgba(58,46,38,.12);}
+.gd-a4 .sheet-icon svg{width:14mm;height:14mm;}
+.gd-a4 .sheet-icon.c-parking{background:#EAF0F6;border:.5mm solid #6E8CAE;color:#4F6E8F;}
+.gd-a4 .sheet-icon.c-atm{background:#EEF3EC;border:.5mm solid #7C9473;color:#587550;}
+.gd-a4 .sheet-icon.c-hall{background:#F7EFE4;border:.5mm solid var(--g-rose);color:var(--g-rose-d);}
+.gd-a4 .sheet-icon.c-bride{background:#FBEEEF;border:.5mm solid #C77D86;color:#A85C66;}
+.gd-a4 .sheet-icon.c-meal{background:#FBF3E0;border:.5mm solid #C79A4B;color:#9C7826;}
+.gd-a4 .sheet-icon.c-child{background:#F3EFF7;border:.5mm solid #9B87B0;color:#7C6797;}
+.gd-a4 .sheet-row-title{font-size:8.5mm;font-weight:700;color:var(--g-ink);margin-bottom:1.7mm;line-height:1.2;letter-spacing:.01em;}
+.gd-a4 .sheet-row-body{font-size:6.5mm;font-weight:500;color:var(--g-soft);line-height:1.35;word-break:keep-all;}
+.gd-a4 .sheet-row-body div + div{margin-top:.8mm;}
+.gd-a4 .sheet-note-box{grid-column:1 / -1;padding:4mm 5mm;background:var(--g-ivory-d);border-radius:3mm;font-size:4.2mm;color:var(--g-ink);line-height:1.4;white-space:pre-line;}
+.gd-a4 .sheet-note-box .nt{font-weight:700;font-size:3.8mm;color:var(--g-rose-d);margin-bottom:1.2mm;letter-spacing:.3mm;}
+.gd-a4 .sheet-footer{margin-top:3mm;padding-top:2.5mm;border-top:.4mm dashed var(--g-line);text-align:center;font-size:4.8mm;font-weight:500;color:var(--g-soft);line-height:1.4;}
+#gdPrint{display:none;}
+@media print{
+  body.gd-printing > *:not(#gdPrint){display:none !important;}
+  body.gd-printing{background:#fff !important;margin:0;}
+  body.gd-printing #gdPrint{display:block !important;}
+  body.gd-printing #gdPrint .gd-a4{position:static;transform:none !important;}
+  @page{size:A4;margin:0;}
+}
 
 /* ================= 접속 메인화면 (모먼트웍스 로고) ================= */
 .mw-entry{position:fixed;inset:0;z-index:500;overflow-y:auto;background:#F7F5F0;background-image:radial-gradient(ellipse at 50% 38%, #FFFFFF 0%, #F7F5F0 55%, #EFEBE3 100%);color:#1A1618;
@@ -218,7 +259,7 @@ const MW_LOGO_MARK_LIGHT='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAABz
 ================================================================================================ */
 const CustomerPortal = (function(){
   const WD = ['일','월','화','수','목','금','토'];
-  let root=null, view=null, H={}, busy=false, giftOpen=false, navOn=null, liveSel=0;
+  let root=null, view=null, H={}, busy=false, giftOpen=false, navOn=null, liveSel=0, guideSel=0;
   const SVG = d=> `<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
   const ICON_REFRESH = SVG('<path d="M20 11a8 8 0 1 0-2.34 5.66"/><path d="M20 4v7h-7"/>');
   const ICON_LOGOUT = SVG('<path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4"/><path d="M15 8l4 4-4 4"/><path d="M19 12H9"/>');
@@ -412,6 +453,71 @@ const CustomerPortal = (function(){
     </section>`;
   }
   let giftCodeOpen = false;
+  /* ---------- 예식 안내문 (운영설정서 07 하객 안내사항) ---------- */
+  const GI = { // A. 온-비비드 (하객 안내문 생성기와 같은 아이콘 · 색)
+    parking: ['c-parking','<path d="M4.5 15.5l1.4-5A2 2 0 017.8 9h8.4a2 2 0 011.9 1.5l1.4 5"/><rect x="3.2" y="15.5" width="17.6" height="4.2" rx="1.4"/><circle cx="7.5" cy="19.7" r="1.3"/><circle cx="16.5" cy="19.7" r="1.3"/>'],
+    atm: ['c-atm','<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10.5h18"/><path d="M6.5 15h4"/>'],
+    banquet: ['c-hall','<path d="M12 21s7-7.4 7-12.2A7 7 0 105 8.8C5 13.6 12 21 12 21z"/><circle cx="12" cy="8.8" r="2.6"/>'],
+    bridalRoom: ['c-bride','<rect x="5.5" y="3" width="13" height="18" rx="1.2"/><circle cx="14.5" cy="12" r="1"/>'],
+    mealTime: ['c-meal','<path d="M7 3v6.5a1.6 1.6 0 003.2 0V3M8.6 9.5V21"/><path d="M16.5 3c-1.4 0-2.4 2-2.4 4.4S15.1 12 16.5 12M16.5 3v18"/>'],
+    childTicket: ['c-child','<path d="M3 9.5a2 2 0 012-2h14a2 2 0 012 2 1.5 1.5 0 000 5 2 2 0 01-2 2H5a2 2 0 01-2-2 1.5 1.5 0 000-5z"/><path d="M9.5 7.5v9" stroke-dasharray="1.6 1.8"/>']
+  };
+  function guideSheetHTML(sd, items){
+    const logo = typeof MW_LOGO_FULL!=='undefined' ? MW_LOGO_FULL : (typeof MW_LOGO_MARK!=='undefined' ? MW_LOGO_MARK : '');
+    const rows = items.map(it=>{ const c = GI[it.key] || GI.banquet;
+      return `<div class="sheet-row"><div class="sheet-icon ${c[0]}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${c[1]}</svg></div><div class="sheet-row-title">${e(it.label)}</div><div class="sheet-row-body">${String(it.value||'').split('\n').map(x=>x.trim()).filter(Boolean).map(x=>`<div>${e(x)}</div>`).join('')}</div></div>`; }).join('');
+    const note = sd.note ? `<div class="sheet-note-box"><div class="nt">${e(sd.label||'')}측 안내</div>${e(sd.note)}</div>` : '';
+    return `<div class="gd-a4 tpl-a"><div class="sheet-frame"><div class="sheet-content">
+      ${logo? `<div class="sheet-mark"><img src="${logo}" alt="Moment Works"></div>` : ''}
+      <div class="sheet-couple">${sd.label && sd.name ? e(sd.label)+' '+e(sd.name) : sd.name ? e(sd.name) : '결혼을 진심으로 축하합니다'}</div>
+      <div class="sheet-hr"></div>
+      ${sd.en? `<div class="sheet-side-badge ${sd.key}">${e(sd.en)}</div>` : ''}
+      <div class="sheet-rows">${rows}${note}</div>
+      <div class="sheet-footer">궁금하신 점은 언제든 축의대 데스크로 편하게 말씀해 주세요.<br>참석해 주셔서 진심으로 감사드립니다.</div>
+    </div></div></div>`;
+  }
+  // A4(210×297mm) 원본 그대로 만들고 화면 폭에 맞춰 축소 · 내용이 넘치면 자동 축소
+  function fitGuide(){
+    if(!root) return;
+    root.querySelectorAll('.gd-a4wrap').forEach(wrap=>{
+      const sheet = wrap.querySelector('.gd-a4'); if(!sheet) return;
+      const content = sheet.querySelector('.sheet-content'), frame = sheet.querySelector('.sheet-frame');
+      if(content && frame){ content.style.zoom = '1'; const cs = getComputedStyle(frame); const room = frame.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+        if(content.scrollHeight > room && room>0) content.style.zoom = String(Math.max(0.55, room / content.scrollHeight)); }
+      sheet.style.transform = 'none';
+      const w = sheet.offsetWidth, h = sheet.offsetHeight, sc = Math.min(1, (wrap.clientWidth || w) / w);
+      sheet.style.transform = `scale(${sc})`; wrap.style.height = (h*sc) + 'px';
+    });
+  }
+  if(typeof window!=='undefined' && !window.__gdFit){ window.__gdFit = true; window.addEventListener('resize', ()=> fitGuide()); }
+  function guideHTML(){
+    const g = view.guide;
+    if(!g || !g.items || !g.items.length){
+      const f = view.info && view.info.settingsFormUrl;
+      return `<section class="cp-card" id="cp-guide"><h2>📋 예식 안내문</h2>
+        <div class="cp-empty">축의대 운영설정서를 제출하시면<br><b>하객 안내사항</b>으로 예식 안내문이 자동으로 만들어져요 ✨</div>
+        ${f && !view.wedding.settingsSubmitted ? `<a class="cp-btn primary wide" href="${e(f)}" target="_blank" rel="noopener">📝 운영설정서 작성하기</a>` : ''}
+      </section>`;
+    }
+    const sides = g.sides.length ? g.sides : [{key:'', label:'', en:'', name: view.client.contractName||view.client.name, note:''}];
+    if(guideSel >= sides.length) guideSel = 0;
+    const sd = sides[guideSel];
+    const tabs = sides.length>1 ? `<div class="cp-live-tabs">${sides.map((x,i)=>`<button class="${i===guideSel?'on':''}" data-cp="guideSel" data-v="${i}">${x.key==='bride'?'👰':'🤵'} ${e(x.label)}측 안내문</button>`).join('')}</div>` : '';
+    setTimeout(fitGuide, 0);
+    return `<section class="cp-card" id="cp-guide"><h2>📋 예식 안내문</h2>
+      <p class="cp-desc">운영설정서의 <b>하객 안내사항</b>으로 만든 축의대 안내문이에요. 예식 당일 축의대에 비치되고, 하객분들께 미리 공유하실 수도 있어요.</p>
+      ${tabs}
+      <div class="gd-a4wrap" id="gdSheet">${guideSheetHTML(sd, g.items)}</div>
+      <div class="cp-row2" style="margin-top:12px;"><button class="cp-btn primary" data-cp="guideShare">📤 안내문 공유하기</button><button class="cp-btn ghost" data-cp="guidePrint">🖨 PDF로 저장</button></div>
+    </section>`;
+  }
+  function guideText(){
+    const g = view.guide; if(!g) return '';
+    const sides = g.sides.length ? g.sides : [{label:'', name: view.client.contractName||view.client.name}];
+    const sd = sides[guideSel] || sides[0], w = view.wedding;
+    return [`💐 ${sd.label? sd.label+' ' : ''}${sd.name} 결혼식 안내`, `📅 ${fdate(w.date, true)} ${w.time||''}`, w.venue ? `📍 ${w.venue} ${w.hall||''}`.trim() : '', '',
+      ...g.items.map(it=> `▪️ ${it.label}: ${it.value}`), '', '참석해 주셔서 진심으로 감사드립니다 🙏'].filter((x,i,a)=> x!=='' || a[i-1]!=='').join('\n');
+  }
   function giftHTML(){
     const l = view.live || {};
     const u = l.giftUrl || 'https://momentworks.github.io/arrange/', code = l.giftCode || '';
@@ -499,7 +605,7 @@ const CustomerPortal = (function(){
   }
   function render(){
     if(!root || !view) return;
-    const nav = [['cp-wedding','예식'],['cp-contract','계약'],['cp-live','라이브'],['cp-gift','축의현황'],['cp-ref','짝꿍코드'],['cp-rec','추천하기']];
+    const nav = [['cp-wedding','예식'],['cp-guide','안내문'],['cp-contract','계약'],['cp-live','라이브'],['cp-gift','축의현황'],['cp-ref','짝꿍코드'],['cp-rec','추천하기']];
     const up = view.generatedAt ? new Date(view.generatedAt) : new Date();
     root.innerHTML = `<div class="cp">
       ${busy? '<div class="cp-busy"></div>':''}
@@ -521,6 +627,7 @@ const CustomerPortal = (function(){
         ${noticeHTML()}
         ${alarmHTML()}
         ${weddingHTML()}
+        ${guideHTML()}
         ${contractHTML()}
         ${liveHTML()}
         ${giftHTML()}
@@ -554,6 +661,15 @@ const CustomerPortal = (function(){
       return;
     }
     if(a==='contractDownload'){ downloadDoc(el); return; }
+    if(a==='guideSel'){ guideSel = Number(el.dataset.v)||0; render(); const t=document.getElementById('cp-guide'); if(t) t.scrollIntoView({block:'start'}); return; }
+    if(a==='guideShare'){ const text = guideText(); if(navigator.share){ try{ await navigator.share({title:'결혼식 안내', text}); }catch(_){} } else if(await copyText(text)) toast('안내문을 복사했어요 · 카톡에 붙여넣어 보내주세요'); return; }
+    if(a==='guidePrint'){
+      const sh = document.getElementById('gdSheet'); if(!sh) return;
+      let pr = document.getElementById('gdPrint'); if(pr) pr.remove();
+      pr = document.createElement('div'); pr.id = 'gdPrint'; const a4 = sh.querySelector('.gd-a4').cloneNode(true); a4.style.transform = 'none'; pr.appendChild(a4); document.body.appendChild(pr);
+      document.body.classList.add('gd-printing');
+      const done = ()=>{ document.body.classList.remove('gd-printing'); const x = document.getElementById('gdPrint'); if(x) x.remove(); window.removeEventListener('afterprint', done); };
+      window.addEventListener('afterprint', done); setTimeout(()=>{ window.print(); setTimeout(done, 2000); }, 60); return; }
     if(a==='giftCode'){ giftCodeOpen = !giftCodeOpen; render(); return; }
     if(a==='copyGift'){ if(await copyText(view.live.giftCode)) toast('현황판 코드를 복사했어요'); return; }
     if(a==='shareGift'){
