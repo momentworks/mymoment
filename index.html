@@ -116,6 +116,12 @@ html,body{margin:0;padding:0;background:#F7F5F0;}
 .cp-greet-s{font-size:13px;color:var(--cp-soft);margin-top:6px;line-height:1.7;word-break:keep-all;}
 .cp-greet-s b{color:var(--cp-wine);border-bottom:1px solid var(--cp-gold);}
 
+.cp-logo-btn{border:none;background:none;padding:0;margin:0;cursor:pointer;display:block;line-height:0;-webkit-tap-highlight-color:transparent;}
+.cp-logo-btn:active img{transform:scale(.95);}
+.cp-nav-link{flex:0 0 auto;color:#E9CF98;font-size:13px;font-weight:700;letter-spacing:.02em;padding:12px 14px;white-space:nowrap;text-decoration:none;border-left:1px solid rgba(255,255,255,.12);margin-left:4px;}
+.cp-nav-link:hover{color:#fff;}
+.cp-rec-box{background:#FAF7F1;border:1px solid var(--cp-line);border-radius:12px;padding:14px;font-size:13px;line-height:1.75;color:var(--cp-ink);margin-bottom:12px;word-break:keep-all;overflow-wrap:anywhere;max-height:320px;overflow:auto;}
+
 /* ================= 접속 메인화면 (모먼트웍스 로고) ================= */
 .mw-entry{position:fixed;inset:0;z-index:500;overflow-y:auto;background:#F7F5F0;background-image:radial-gradient(ellipse at 50% 38%, #FFFFFF 0%, #F7F5F0 55%, #EFEBE3 100%);color:#1A1618;
   font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;display:flex;align-items:center;justify-content:center;padding:56px 22px;box-sizing:border-box;}
@@ -389,6 +395,36 @@ const CustomerPortal = (function(){
     const i = view.info;
     return `${i.notice || i.memo ? `<section class="cp-card cp-notice"><h2>📌 안내</h2>${i.notice? `<p>${e(i.notice).replace(/\n/g,'<br>')}</p>`:''}${i.memo? `<p class="cp-memo">${e(i.memo).replace(/\n/g,'<br>')}</p>`:''}</section>`:''}`;
   }
+  const HOME_URL = 'https://momentworks.github.io/momentworks.kr/';
+  function homeUrl(){ return (view.info && view.info.home) || HOME_URL; }
+  function recommendText(){
+    const code = view.referral && view.referral.code, kakao = (view.info && view.info.kakao) || 'https://pf.kakao.com/_FbIfX/chat';
+    return [
+      '💐 결혼 준비 중이라면 꼭 알려주고 싶은 곳!',
+      '',
+      (dday(view.wedding.date)!==null && dday(view.wedding.date)<0) ? '저는 결혼식 축의대를 "모먼트웍스"에 맡겼는데, 정말 만족스러워서 추천해요 😊' : '저는 결혼식 축의대를 "모먼트웍스"에 맡기기로 했는데, 꼼꼼하고 든든해서 추천해요 😊',
+      '',
+      '✨ 모먼트웍스 축의대 대행 서비스',
+      '✔️ 교육받은 전문 파트너가 축의금 접수 · 식권 배부부터 정산까지 책임져요',
+      '✔️ 가족 · 친구에게 축의대를 부탁하는 부담이 없어요',
+      '✔️ 예식 중에도 실시간으로 축의 현황을 확인할 수 있어요',
+      '✔️ 예식 후 깔끔하게 정리된 정산 내역을 받아볼 수 있어요',
+      '✔️ 전용 고객 페이지로 예식 정보 · 계약서 · 일정 알림까지 한 번에!',
+      '',
+      code ? `🎁 계약할 때 제 짝꿍코드 [${code}] 를 입력하면 2만원 할인 혜택을 받을 수 있어요!` : '',
+      code ? '' : null,
+      `🏠 홈페이지: ${homeUrl()}`,
+      `💬 카카오톡 상담: ${kakao}`,
+    ].filter(x=> x!==null).join('\n').replace(/\n{3,}/g,'\n\n');
+  }
+  function recommendHTML(){
+    const code = view.referral && view.referral.code;
+    return `<section class="cp-card cp-rec" id="cp-rec"><h2>💝 모먼트웍스 추천하기</h2>
+      <p class="cp-desc">결혼을 준비하는 지인분께 모먼트웍스를 소개해주세요.${code? ` 추천 글에 <b>${e(view.client.name)}님의 짝꿍코드</b>가 함께 들어가서, 지인분은 할인을 받고 ${e(view.client.name)}님께는 혜택이 적립돼요 🎁` : ''}</p>
+      <div class="cp-rec-box">${e(recommendText()).replace(/\n/g,'<br>')}</div>
+      <div class="cp-row2"><button class="cp-btn primary" data-cp="recShare">📤 추천하기 (공유)</button><button class="cp-btn ghost" data-cp="recCopy">추천 글 복사</button></div>
+    </section>`;
+  }
   function infoHTML(){ // 💬 문의하기
     const i = view.info;
     return `      <section class="cp-card cp-contact"><h2>💬 문의하기</h2>
@@ -410,14 +446,14 @@ const CustomerPortal = (function(){
   }
   function render(){
     if(!root || !view) return;
-    const nav = [['cp-wedding','예식'],['cp-contract','계약'],['cp-live','라이브'],['cp-gift','축의현황'],['cp-ref','짝꿍코드']];
+    const nav = [['cp-wedding','예식'],['cp-contract','계약'],['cp-live','라이브'],['cp-gift','축의현황'],['cp-ref','짝꿍코드'],['cp-rec','추천하기']];
     const up = view.generatedAt ? new Date(view.generatedAt) : new Date();
     root.innerHTML = `<div class="cp">
       ${busy? '<div class="cp-busy"></div>':''}
       ${H.preview? `<div class="cp-preview">관리자 미리보기 · 고객에게 보이는 화면이에요 <button data-cp="closePreview">닫기</button></div>`:''}
       <header class="cp-top">
         <div class="cp-brandrow">
-          ${typeof MW_LOGO_MARK!=='undefined' ? `<img class="cp-mark" src="${MW_LOGO_MARK}" alt="Moment Works">` : ''}
+          ${typeof MW_LOGO_MARK!=='undefined' ? `<button class="cp-logo-btn" data-cp="home" title="홈으로 · 새로고침" aria-label="홈으로 · 새로고침"><img class="cp-mark" src="${MW_LOGO_MARK}" alt="Moment Works"></button>` : ''}
           <div>
             <div class="cp-brand">My Moment</div>
             <div class="cp-who">${e(view.client.name)}님${view.client.sideLabel? `<span class="cp-role">${e(view.client.sideLabel)}</span>` : ''}</div>
@@ -425,7 +461,7 @@ const CustomerPortal = (function(){
         </div>
         <div class="cp-top-acts"><button class="cp-icon" data-cp="refresh" title="새로고침" aria-label="새로고침">${ICON_REFRESH}</button>${H.preview? '' : `<button class="cp-icon" data-cp="logout" title="로그아웃" aria-label="로그아웃">${ICON_LOGOUT}</button>`}</div>
       </header>
-      <nav class="cp-nav">${nav.map(([id,l],i)=>`<button class="${(navOn||nav[0][0])===id?'on':''}" data-cp="go" data-v="${id}">${l}</button>`).join('')}</nav>
+      <nav class="cp-nav">${nav.map(([id,l],i)=>`<button class="${(navOn||nav[0][0])===id?'on':''}" data-cp="go" data-v="${id}">${l}</button>`).join('')}<a class="cp-nav-link" href="${e(homeUrl())}" target="_blank" rel="noopener">홈페이지 ↗</a></nav>
       <main class="cp-main">
         ${greetHTML()}
         ${heroHTML()}
@@ -436,6 +472,7 @@ const CustomerPortal = (function(){
         ${liveHTML()}
         ${giftHTML()}
         ${referralHTML()}
+        ${recommendHTML()}
         ${infoHTML()}
         ${H.onInstall && !(H.isInstalled && H.isInstalled()) ? '<div style="text-align:center;margin:6px 0 4px;"><button class="cp-install" data-cp="install">📲 홈 화면에 바로가기 추가</button></div>' : ''}
       </main>
@@ -449,6 +486,13 @@ const CustomerPortal = (function(){
     if(a==='go'){ const t = document.getElementById(el.dataset.v); if(t) t.scrollIntoView({behavior:'smooth', block:'start'}); setNav(el.dataset.v); return; }
     if(a==='giftToggle'){ giftOpen = !giftOpen; render(); const t=document.getElementById('cp-gift'); if(t) t.scrollIntoView({block:'start'}); return; }
     if(a==='copyCode'){ if(await copyText(view.referral.code)) toast('짝꿍코드를 복사했어요'); return; }
+    if(a==='recShare'){
+      const text = recommendText();
+      if(navigator.share){ try{ await navigator.share({title:'모먼트웍스 축의대 대행 서비스 추천', text}); }catch(_){} }
+      else if(await copyText(text)) toast('추천 글을 복사했어요 · 카톡에 붙여넣어 보내주세요');
+      return;
+    }
+    if(a==='recCopy'){ if(await copyText(recommendText())) toast('추천 글을 복사했어요'); return; }
     if(a==='shareCode'){
       const text = `💍 모먼트웍스 축의대 대행 서비스\n계약할 때 짝꿍코드 [${view.referral.code}] 를 입력하면 할인을 받을 수 있어요!\n상담: ${view.info.kakao}`;
       if(navigator.share){ try{ await navigator.share({text}); }catch(_){} } else if(await copyText(text)) toast('공유 문구를 복사했어요');
@@ -466,7 +510,8 @@ const CustomerPortal = (function(){
       if(navigator.share){ try{ await navigator.share({text}); }catch(_){} } else if(await copyText(text)) toast('라이브 링크를 복사했어요');
       return;
     }
-    if(a==='refresh'){
+    if(a==='home'){ window.scrollTo(0,0); navOn=null; setNav((root.querySelector('.cp-nav button')||{dataset:{}}).dataset.v); }
+    if(a==='refresh' || a==='home'){
       if(busy || !H.onRefresh) return; busy=true; render();
       try{ const nv = await H.onRefresh(); if(nv) view = nv; toast('최신 정보로 업데이트했어요'); }catch(err){ toast(err.message||'불러오지 못했어요'); }
       finally{ busy=false; render(); }
