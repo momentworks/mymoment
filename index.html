@@ -445,11 +445,11 @@ const CustomerPortal = (function(){
           <div class="ic">📺</div><b>${e(view.client.contractName||view.client.name)}님 결혼식<br>유튜브 라이브</b>${liveStart()? `<span>⏰ ${fdate(view.wedding.date)} ${liveStart()}부터 시청 가능</span>`:''}
           <em>▶ 유튜브에서 라이브 보기</em></a>
         <button class="cp-btn primary wide" data-cp="shareLive">🔗 라이브 링크 공유하기</button>
-        <p class="cp-note">⏰ 유튜브 라이브는 <b>예식 당일 1시간 전${liveStart()? `(${liveStart()})`:''}부터</b> 중계가 시작돼요.<br>🔗 라이브 링크를 공유하면 오시지 못하는 분들도 예식을 함께 보실 수 있어요 💐</p>`
+        <p class="cp-note">⏰ 유튜브 라이브는 <b>예식 당일 1시간 전${liveStart()? `(${liveStart()})`:''}부터</b> 중계가 시작돼요.<br>🔗 라이브 링크를 공유하면 축의대 라이브 영상을 함께 보실 수 있어요 💐</p>`
         : (n!==null && n<0 ? `<div class="cp-empty">라이브 영상이 등록되지 않았어요</div>`
           : `<div class="cp-live-wait"><div class="ic">📺</div><b>유튜브 라이브는 예식 당일<br>1시간 전부터 중계가 시작돼요</b>${liveStart()? `<span>⏰ ${fdate(view.wedding.date)} ${liveStart()}부터 시청 가능</span>`:''}<small>중계가 시작되면 이 자리에서 바로 보실 수 있어요 🎥</small></div>
         <button class="cp-btn primary wide" data-cp="shareLive">🔗 라이브 안내 공유하기</button>
-        <p class="cp-note">🔗 라이브 링크는 예식 전에 등록되며, 공유하면 오시지 못하는 분들도 예식을 함께 보실 수 있어요 💐</p>`)}
+        <p class="cp-note">🔗 라이브 링크는 예식 전에 등록되며, 공유하면 축의대 라이브 영상을 함께 보실 수 있어요 💐</p>`)}
     </section>`;
   }
   let giftCodeOpen = false;
