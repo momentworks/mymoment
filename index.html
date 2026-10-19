@@ -355,7 +355,6 @@ const CustomerPortal = (function(){
       <div class="cp-dsub">${sub}</div>
       <div class="cp-when"><b>${fdate(w.date, true)}</b>${w.time? ` · ${e(w.time)}` : ''}<br>${e(w.venue)} ${e(w.hall)}</div>
       <div class="cp-hero-acts">
-        <button class="cp-btn gold" data-cp="go" data-v="cp-alarm">🔔 운영서 제출 알림</button>
         <a class="cp-btn ghost" href="https://map.naver.com/v5/search/${encodeURIComponent(w.venue||'')}" target="_blank" rel="noopener">📍 길찾기</a>
       </div>
     </section>`;
@@ -388,7 +387,7 @@ const CustomerPortal = (function(){
   function contractHTML(){
     const c = view.contract, a = c.amounts;
     const row = (l, v, cls, sign)=> v ? `<div class="${cls||''}"><span>${l}</span><b>${sign||''}${won(v)}</b></div>` : '';
-    return `<section class="cp-card" id="cp-contract"><h2>📄 계약 정보</h2>
+    return `<section class="cp-card" id="cp-contract"><h2>💰 정산 관리</h2>
       <dl class="cp-dl"><div><dt>계약일</dt><dd>${c.date? fdate(c.date, true) : '-'}</dd></div><div><dt>계약 코드 · 짝꿍코드</dt><dd><b>${e(c.code)||'-'}</b></dd></div></dl>
       <div class="cp-money">
         ${row('기준 금액', a.base)}
@@ -404,6 +403,11 @@ const CustomerPortal = (function(){
         ${a.reviewDay? `<div class="minus"><span>본식후기 할인 (예식 후 페이백)</span><b>− ${won(a.reviewDay)}</b></div>`:''}
       </div>
       <p class="cp-note">${c.settled? '✓ 정산이 완료됐어요' : '금액은 예식 전 확정 내용에 따라 달라질 수 있어요. 궁금한 점은 언제든 문의해주세요.'}</p>
+    </section>`;
+  }
+  function contractDocHTML(){
+    const c = view.contract;
+    return `<section class="cp-card" id="cp-cdoc"><h2>📄 계약 정보</h2>
       ${c.hasFile? `<button type="button" class="cp-btn primary wide" data-cp="contractDownload">⬇ 계약서 다운로드 (PDF)</button><p class="cp-note">🔒 계약서는 본인 접속코드로만 받을 수 있어요.</p>` : '<div class="cp-empty">계약서 파일이 준비되면 여기서 바로 받을 수 있어요</div>'}
     </section>`;
   }
@@ -493,10 +497,19 @@ const CustomerPortal = (function(){
   function guideHTML(){
     const g = view.guide;
     if(!g || !g.items || !g.items.length){
-      const f = view.info && view.info.settingsFormUrl;
+      // 설정서 제출 전: 예시 안내문 + 안내 문구
+      const sample = [
+        {key:'parking', label:'주차 정산', value:'1층 로비에서 차량 등록\n무료주차 2시간'},
+        {key:'atm', label:'ATM 위치', value:'1층 로비'},
+        {key:'banquet', label:'연회장 위치', value:'2층'},
+        {key:'bridalRoom', label:'신부대기실', value:'홀 입구 왼편'},
+        {key:'mealTime', label:'식사 가능 시간', value:'예식 30분 전'},
+        {key:'childTicket', label:'소인식권', value:'6세 ~ 11세 (6세미만 무료)'}];
+      const sd0 = {key:'groom', label:'신랑', en:'GROOM SIDE · 신랑측', name:'김철수(예시)', note:''};
+      setTimeout(fitGuide, 0);
       return `<section class="cp-card" id="cp-guide"><h2>📋 예식 안내문</h2>
-        <div class="cp-empty">축의대 운영설정서를 제출하시면<br><b>하객 안내사항</b>으로 예식 안내문이 자동으로 만들어져요 ✨</div>
-        ${f && !view.wedding.settingsSubmitted ? `<a class="cp-btn primary wide" href="${e(f)}" target="_blank" rel="noopener">📝 운영설정서 작성하기</a>` : ''}
+        <div class="gd-a4wrap gd-sample" id="gdSheet">${guideSheetHTML(sd0, sample)}</div>
+        <div class="cp-empty" style="margin-top:12px;">축의대 운영설정서를 제출하시면<br><b>하객 안내사항</b>으로 예식 안내문이 자동으로 만들어져요 ✨</div>
       </section>`;
     }
     const sides = g.sides.length ? g.sides : [{key:'', label:'', en:'', name: view.client.contractName||view.client.name, note:''}];
@@ -605,7 +618,7 @@ const CustomerPortal = (function(){
   }
   function render(){
     if(!root || !view) return;
-    const nav = [['cp-wedding','예식'],['cp-guide','안내문'],['cp-contract','계약'],['cp-live','라이브'],['cp-gift','축의현황'],['cp-ref','짝꿍코드'],['cp-rec','추천하기']];
+    const nav = [['cp-cdoc','계약'],['cp-wedding','예식'],['cp-contract','정산'],['cp-guide','안내문'],['cp-live','라이브'],['cp-gift','축의현황'],['cp-ref','짝꿍코드'],['cp-rec','추천하기']];
     const up = view.generatedAt ? new Date(view.generatedAt) : new Date();
     root.innerHTML = `<div class="cp">
       ${busy? '<div class="cp-busy"></div>':''}
@@ -624,11 +637,11 @@ const CustomerPortal = (function(){
       <main class="cp-main">
         ${greetHTML()}
         ${heroHTML()}
+        ${contractDocHTML()}
         ${noticeHTML()}
-        ${alarmHTML()}
         ${weddingHTML()}
-        ${guideHTML()}
         ${contractHTML()}
+        ${guideHTML()}
         ${liveHTML()}
         ${giftHTML()}
         ${referralHTML()}
