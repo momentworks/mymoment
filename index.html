@@ -518,7 +518,7 @@ const CustomerPortal = (function(){
     const tabs = sides.length>1 ? `<div class="cp-live-tabs">${sides.map((x,i)=>`<button class="${i===guideSel?'on':''}" data-cp="guideSel" data-v="${i}">${x.key==='bride'?'👰':'🤵'} ${e(x.label)}측 안내문</button>`).join('')}</div>` : '';
     setTimeout(fitGuide, 0);
     return `<section class="cp-card" id="cp-guide"><h2>📋 예식 안내문</h2>
-      <p class="cp-desc">운영설정서의 <b>하객 안내사항</b>으로 만든 축의대 안내문이에요. 예식 당일 축의대에 비치되고, 하객분들께 미리 공유하실 수도 있어요.</p>
+      <p class="cp-desc">운영설정서의 <b>하객 안내사항</b>으로 만든 축의대 안내문이에요. 필요하신 경우, 출력하시어 예식 당일 축의대에 비치하시거나 하객분들께 미리 공유하실 수 있어요.</p>
       ${tabs}
       <div class="gd-a4wrap" id="gdSheet">${guideSheetHTML(sd, g.items)}</div>
       <div class="cp-row2" style="margin-top:12px;"><button class="cp-btn primary" data-cp="guideShare">📤 안내문 공유하기</button><button class="cp-btn ghost" data-cp="guidePrint">🖨 PDF로 저장</button></div>
@@ -531,9 +531,16 @@ const CustomerPortal = (function(){
     return [`💐 ${sd.label? sd.label+' ' : ''}${sd.name} 결혼식 안내`, `📅 ${fdate(w.date, true)} ${w.time||''}`, w.venue ? `📍 ${w.venue} ${w.hall||''}`.trim() : '', '',
       ...g.items.map(it=> `▪️ ${it.label}: ${it.value}`), '', '참석해 주셔서 진심으로 감사드립니다 🙏'].filter((x,i,a)=> x!=='' || a[i-1]!=='').join('\n');
   }
+  /* 현황판 주소 + 내 현황판 코드 (?code= 와 #code= 를 함께 붙여, 앱 안 브라우저가 한쪽을 떼어내도 자동 로그인) */
+  function giftLink(l){
+    l = l || {}; const code = String(l.giftCode||'').trim();
+    if(!code) return l.giftUrl || 'https://momentworks.github.io/arrange/';
+    const base = String(l.giftBase || 'https://momentworks.github.io/arrange/').split('#')[0].split('?')[0];
+    return base + '?code=' + encodeURIComponent(code) + '#code=' + encodeURIComponent(code);
+  }
   function giftHTML(){
     const l = view.live || {};
-    const u = l.giftUrl || 'https://momentworks.github.io/arrange/', code = l.giftCode || '';
+    const code = l.giftCode || '', u = giftLink(l);
     const nm = e(view.client.name);
     return `<section class="cp-card" id="cp-gift"><h2>💌 실시간 축의 현황</h2>
       <p class="cp-desc">예식 당일 ${view.client.sideLabel? `<b>${e(view.client.sideLabel)}</b> ` : ''}축의대에서 접수되는 축의 내역을 실시간으로 확인하실 수 있어요.${code? ' 버튼을 누르면 <b>자동으로 로그인</b>돼요.' : ''}</p>
@@ -686,7 +693,7 @@ const CustomerPortal = (function(){
     if(a==='giftCode'){ giftCodeOpen = !giftCodeOpen; render(); return; }
     if(a==='copyGift'){ if(await copyText(view.live.giftCode)) toast('현황판 코드를 복사했어요'); return; }
     if(a==='shareGift'){
-      const text = `💌 ${view.client.name}님 ${view.client.sideLabel? view.client.sideLabel+' ' : ''}실시간 축의 현황\n아래 링크를 누르면 바로 열려요 (현황판 코드: ${view.live.giftCode})\n${view.live.giftUrl}`;
+      const text = `💌 ${view.client.name}님 ${view.client.sideLabel? view.client.sideLabel+' ' : ''}실시간 축의 현황\n아래 링크를 누르면 바로 열려요 (현황판 코드: ${view.live.giftCode})\n${giftLink(view.live)}`;
       if(navigator.share){ try{ await navigator.share({text}); }catch(_){} } else if(await copyText(text)) toast('현황판 링크를 복사했어요');
       return;
     }
