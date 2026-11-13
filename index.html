@@ -363,11 +363,22 @@ const CustomerPortal = (function(){
     const list = remindDates();
     return `<section class="cp-card" id="cp-alarm"><h2>🔔 축의대 운영서 제출기한 알림</h2>
       <p class="cp-desc">휴대폰 캘린더에 추가하면 예식 10일 전 · 5일 전에 알림을 받으실 수 있어요.</p>
-      ${!view.wedding.date ? '<div class="cp-empty">예식 일정이 정해지면 알림을 추가할 수 있어요</div>'
+      ${view.wedding.settingsSubmitted ? `<div class="cp-empty" style="color:#2F7D57;font-weight:700;">✅ 운영 설정서 제출을 완료하셨어요${sfWhen()? ` (${sfWhen()})`:''} · 제출기한 알림은 더 필요하지 않아요</div>`
+        : !view.wedding.date ? '<div class="cp-empty">예식 일정이 정해지면 알림을 추가할 수 있어요</div>'
         : !list.length ? '<div class="cp-empty">제출 알림 기간(예식 10일 전 · 5일 전)이 지났어요</div>'
         : `<button class="cp-btn wide" data-cp="ics">📅 휴대폰 캘린더에 추가</button>
       <div class="cp-row2" style="margin-top:8px;font-size:12.5px;">${list.map(r=>`<a class="cp-btn ghost" style="font-size:13px;padding:11px 8px;white-space:nowrap;" href="${e(googleCalUrl(r))}" target="_blank" rel="noopener">Google 캘린더 · ${r.n}일 전</a>`).join('')}</div>
       <p class="cp-note">${list.map(r=>`${r.n}일 전 ${fdate(r.date)} 오전 10시`).join(' · ')}</p>`}
+    </section>`;
+  }
+  function sfWhen(){ const a = view.wedding.settingsSubmittedAt; if(!a) return ''; const d = new Date(a); return isNaN(d) ? '' : `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
+  function sfDoneHTML(){ // 축의대 운영 설정서를 제출하면 자동으로 보이는 안내 (예식 전까지)
+    const w = view.wedding, n = dday(w.date);
+    if(!w.settingsSubmitted || (n!==null && n<0)) return '';
+    return `<section class="cp-card cp-sfdone" id="cp-sfdone" style="border:1.5px solid #9CCBAE;background:linear-gradient(135deg,#F1FAF4,#FFFFFF);">
+      <h2 style="color:#2F7D57;">✅ 축의대 운영 설정서 제출 완료</h2>
+      <p class="cp-desc" style="margin:0;">${e(view.client.name)}님, 축의대 운영 설정서가 정상적으로 제출되었어요${sfWhen()? ` <b>(${sfWhen()})</b>`:''}.<br>모먼트웍스가 내용을 확인해 예식 당일 축의대 운영과 예식 안내문에 그대로 반영해 드릴게요.</p>
+      <p class="cp-note" style="margin-top:8px;">수정하실 내용이 있으면 카카오톡 채널로 편하게 알려주세요 😊</p>
     </section>`;
   }
   function weddingHTML(){
@@ -379,7 +390,7 @@ const CustomerPortal = (function(){
         ${w.region? `<div><dt>지역</dt><dd>${e(w.region)}</dd></div>`:''}
         <div><dt>이용 상품</dt><dd>축의대 ${e(w.product)||'-'}</dd></div>
         <div><dt>예상 하객</dt><dd>${view.client.side==='groom' ? `<b>신랑측 ${w.groomGuests}명</b> · 신부측 ${w.brideGuests}명` : view.client.side==='bride' ? `신랑측 ${w.groomGuests}명 · <b>신부측 ${w.brideGuests}명</b>` : `신랑측 ${w.groomGuests}명 · 신부측 ${w.brideGuests}명`}</dd></div>
-        <div><dt>운영 설정서</dt><dd>${w.settingsSubmitted? '<b class="ok">제출 완료 ✓</b>' : '<b class="wait">제출 전</b>'}</dd></div>
+        <div><dt>운영 설정서</dt><dd>${w.settingsSubmitted? `<b class="ok">제출 완료 ✓</b>${sfWhen()? ` <small style="color:#8A8079;font-weight:500;">${sfWhen()} 제출</small>`:''}` : '<b class="wait">제출 전</b>'}</dd></div>
       </dl>
       ${!w.settingsSubmitted && i.settingsFormUrl ? `<a class="cp-btn primary wide" href="${e(i.settingsFormUrl)}" target="_blank" rel="noopener">📝 축의대 운영 설정서 작성하기</a>`:''}
     </section>`;
@@ -646,6 +657,7 @@ const CustomerPortal = (function(){
         ${greetHTML()}
         ${heroHTML()}
         ${contractDocHTML()}
+        ${sfDoneHTML()}
         ${noticeHTML()}
         ${weddingHTML()}
         ${contractHTML()}
