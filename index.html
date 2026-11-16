@@ -378,7 +378,8 @@ const CustomerPortal = (function(){
     return `<section class="cp-card cp-sfdone" id="cp-sfdone" style="border:1.5px solid #9CCBAE;background:linear-gradient(135deg,#F1FAF4,#FFFFFF);">
       <h2 style="color:#2F7D57;">✅ 축의대 운영 설정서 제출 완료</h2>
       <p class="cp-desc" style="margin:0;">${e(view.client.name)}님, 축의대 운영 설정서가 정상적으로 제출되었어요${sfWhen()? ` <b>(${sfWhen()})</b>`:''}.<br>모먼트웍스가 내용을 확인해 예식 당일 축의대 운영과 예식 안내문에 그대로 반영해 드릴게요.</p>
-      <p class="cp-note" style="margin-top:8px;">수정하실 내용이 있으면 카카오톡 채널로 편하게 알려주세요 😊</p>
+      <p class="cp-note" style="margin-top:8px;">수정하실 내용이 있으면 아래 버튼으로 다시 제출하시거나 카카오톡 채널로 편하게 알려주세요 😊</p>
+      ${sfBtnHTML(true)}
     </section>`;
   }
   function weddingHTML(){
@@ -392,8 +393,17 @@ const CustomerPortal = (function(){
         <div><dt>예상 하객</dt><dd>${view.client.side==='groom' ? `<b>신랑측 ${w.groomGuests}명</b> · 신부측 ${w.brideGuests}명` : view.client.side==='bride' ? `신랑측 ${w.groomGuests}명 · <b>신부측 ${w.brideGuests}명</b>` : `신랑측 ${w.groomGuests}명 · 신부측 ${w.brideGuests}명`}</dd></div>
         <div><dt>운영 설정서</dt><dd>${w.settingsSubmitted? `<b class="ok">제출 완료 ✓</b>${sfWhen()? ` <small style="color:#8A8079;font-weight:500;">${sfWhen()} 제출</small>`:''}` : '<b class="wait">제출 전</b>'}</dd></div>
       </dl>
-      ${!w.settingsSubmitted && i.settingsFormUrl ? `<a class="cp-btn primary wide" href="${e(i.settingsFormUrl)}" target="_blank" rel="noopener">📝 축의대 운영 설정서 작성하기</a>`:''}
+      ${view.wedding.settingsSubmitted ? '' : sfBtnHTML()}
     </section>`;
+  }
+  // 운영 설정서 버튼: 제출 전 → 작성하기 · 제출 후 → 수정해서 다시 제출하기 (예식일까지 언제나 보임)
+  function sfBtnHTML(sub){
+    const w = view.wedding, i = view.info || {}, n = dday(w.date);
+    if(n!==null && n<0) return '';
+    if(!i.settingsFormUrl) return w.settingsSubmitted ? '' : `<a class="cp-btn wide" href="${e(i.kakao||'#')}" target="_blank" rel="noopener">💬 운영 설정서 작성 링크는 카카오톡으로 안내드려요</a>`;
+    return w.settingsSubmitted
+      ? `<a class="cp-btn wide" href="${e(i.settingsFormUrl)}" target="_blank" rel="noopener" style="${sub?'margin-top:10px;':''}">✏️ 운영 설정서 수정해서 다시 제출하기</a><p class="cp-note" style="margin-top:6px;">다시 제출하시면 가장 최근에 제출하신 내용으로 바뀌어요.</p>`
+      : `<a class="cp-btn primary wide" href="${e(i.settingsFormUrl)}" target="_blank" rel="noopener">📝 축의대 운영 설정서 작성하기</a>`;
   }
   function contractHTML(){
     const c = view.contract, a = c.amounts;
