@@ -378,8 +378,7 @@ const CustomerPortal = (function(){
     return `<section class="cp-card cp-sfdone" id="cp-sfdone" style="border:1.5px solid #9CCBAE;background:linear-gradient(135deg,#F1FAF4,#FFFFFF);">
       <h2 style="color:#2F7D57;">✅ 축의대 운영 설정서 제출 완료</h2>
       <p class="cp-desc" style="margin:0;">${e(view.client.name)}님, 축의대 운영 설정서가 정상적으로 제출되었어요${sfWhen()? ` <b>(${sfWhen()})</b>`:''}.<br>모먼트웍스가 내용을 확인해 예식 당일 축의대 운영과 예식 안내문에 그대로 반영해 드릴게요.</p>
-      <p class="cp-note" style="margin-top:8px;">수정하실 내용이 있으면 아래 버튼으로 다시 제출하시거나 카카오톡 채널로 편하게 알려주세요 😊</p>
-      ${sfBtnHTML(true)}
+      <p class="cp-note" style="margin-top:8px;">수정하실 내용이 있으면 💍 예식 정보의 「수정 · 다시 제출」 버튼으로 다시 제출하시거나 카카오톡 채널로 편하게 알려주세요 😊</p>
     </section>`;
   }
   function weddingHTML(){
@@ -391,9 +390,9 @@ const CustomerPortal = (function(){
         ${w.region? `<div><dt>지역</dt><dd>${e(w.region)}</dd></div>`:''}
         <div><dt>이용 상품</dt><dd>축의대 ${e(w.product)||'-'}</dd></div>
         <div><dt>예상 하객</dt><dd>${view.client.side==='groom' ? `<b>신랑측 ${w.groomGuests}명</b> · 신부측 ${w.brideGuests}명` : view.client.side==='bride' ? `신랑측 ${w.groomGuests}명 · <b>신부측 ${w.brideGuests}명</b>` : `신랑측 ${w.groomGuests}명 · 신부측 ${w.brideGuests}명`}</dd></div>
-        <div><dt>운영 설정서</dt><dd>${w.settingsSubmitted? `<b class="ok">제출 완료 ✓</b>${sfWhen()? ` <small style="color:#8A8079;font-weight:500;">${sfWhen()} 제출</small>`:''}` : '<b class="wait">제출 전</b>'}</dd></div>
+        <div><dt>운영 설정서</dt><dd style="display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:6px 8px;"><span>${w.settingsSubmitted? `<b class="ok">제출 완료 ✓</b>${sfWhen()? ` <small style="color:#8A8079;font-weight:500;">${sfWhen()} 제출</small>`:''}` : '<b class="wait">제출 전</b>'}</span><a href="${e(sfUrl())}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:999px;font-size:12.5px;font-weight:800;text-decoration:none;white-space:nowrap;${w.settingsSubmitted? 'background:#fff;color:#7A2E3A;border:1px solid #D9C3C6;' : 'background:#7A2E3A;color:#fff;border:1px solid #7A2E3A;'}">${w.settingsSubmitted? '✏️ 수정 · 다시 제출' : '📝 작성하기'}</a></dd></div>
       </dl>
-      ${view.wedding.settingsSubmitted ? '' : sfBtnHTML()}
+      <a class="cp-btn ${w.settingsSubmitted?'':'primary'} wide" href="${e(sfUrl())}" target="_blank" rel="noopener">${w.settingsSubmitted? '✏️ 축의대 운영 설정서 수정해서 다시 제출하기' : '📝 축의대 운영 설정서 작성하기'}</a>
     </section>`;
   }
   // 운영 설정서 버튼: 제출 전 → 작성하기 · 제출 후 → 수정해서 다시 제출하기 (예식일까지 언제나 보임)
